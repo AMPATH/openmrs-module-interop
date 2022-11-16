@@ -13,7 +13,9 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>DHP Events</name>
-    <description>Connects OpenMRS with Digital Health Platform(DHP) via kafka message broker, export events as FHIR resources.</description>
+    <description>Connects OpenMRS with Digital Health Platform(DHP) via kafka message broker, export events as FHIR
+        resources.
+    </description>
 
     <url>https://wiki.openmrs.org/x/FQ4z</url>
 
@@ -58,26 +60,28 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.openmrs</groupId>
-            <artifactId>event-api</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>fhir2-api</artifactId>
-            <version>${fhir2Version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openmrs</groupId>
+                <artifactId>event-api</artifactId>
+                <version>2.5</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openmrs.module</groupId>
+                <artifactId>fhir2-api</artifactId>
+                <version>${fhir2Version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.24</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>
@@ -133,7 +137,7 @@
                         <dependency>
                             <groupId>org.openmrs.tools</groupId>
                             <artifactId>openmrs-tools</artifactId>
-                            <version>${openmrsPlatformVersion}</version>
+                            <version>${openmrsPlatformToolsVersion}</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -173,5 +177,6 @@
         <fhir2Version>1.4.0</fhir2Version>
         <hapifhirVersion>4.2.0</hapifhirVersion>
         <openmrsPlatformVersion>2.3.4</openmrsPlatformVersion>
+        <openmrsPlatformToolsVersion>2.4.0</openmrsPlatformToolsVersion>
     </properties>
 </project>
