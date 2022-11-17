@@ -9,18 +9,36 @@
  */
 package org.openmrs.module.dhpevents;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.openmrs.module.BaseModuleActivator;
+import org.openmrs.module.DaemonToken;
+import org.openmrs.module.DaemonTokenAware;
+import org.openmrs.module.dhpevents.api.DHPEventManager;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
-public class DHPEventsActivator extends BaseModuleActivator {
+@Slf4j
+@Component
+public class DHPEventsActivator extends BaseModuleActivator implements ApplicationContextAware, DaemonTokenAware {
 	
-	private Log log = LogFactory.getLog(this.getClass());
+	@Autowired
+	private DHPEventManager eventManager;
+	
+	private static ApplicationContext applicationContext;
+	
+	private static DaemonToken daemonToken;
 	
 	/**
 	 * @see #started()
 	 */
 	public void started() {
+		applicationContext.getAutowireCapableBeanFactory().autowireBean(this);
+		//Events DHP events
+		this.eventManager.setDaemonToken(daemonToken);
+		this.eventManager.enableEvents();
 		log.info("Started DHP Events");
 	}
 	
@@ -28,7 +46,19 @@ public class DHPEventsActivator extends BaseModuleActivator {
 	 * @see #shutdown()
 	 */
 	public void shutdown() {
+		//Disable all DHP Events
+		this.eventManager.setDaemonToken(daemonToken);
+		this.eventManager.disableEvents();
 		log.info("Shutdown DHP Events");
 	}
 	
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		DHPEventsActivator.applicationContext = applicationContext;
+	}
+	
+	@Override
+	public void setDaemonToken(DaemonToken token) {
+		DHPEventsActivator.daemonToken = token;
+	}
 }
