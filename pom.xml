@@ -34,6 +34,7 @@
     <modules>
         <module>api</module>
         <module>omod</module>
+        <module>kafka-producer</module>
     </modules>
 
     <repositories>
@@ -79,6 +80,17 @@
                 <artifactId>lombok</artifactId>
                 <version>1.18.24</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>3.3.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

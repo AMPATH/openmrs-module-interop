@@ -13,6 +13,8 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 
+import java.util.concurrent.ExecutionException;
+
 import ca.uhn.fhir.context.FhirContext;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +26,8 @@ import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.dhpevents.api.Subscribable;
+import org.openmrs.module.dhpevents.producer.api.ProducerService;
+import org.openmrs.module.dhpevents.producer.api.impl.ProduceServiceImpl;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,6 +43,8 @@ public class PatientCreationListener implements Subscribable<Patient> {
 	
 	@Autowired
 	private PatientTranslator patientTranslator;
+	
+	private ProducerService<String, String> producerService;
 	
 	@Autowired
 	@Qualifier("fhirR4")
@@ -76,6 +82,14 @@ public class PatientCreationListener implements Subscribable<Patient> {
 				
 				log.error("Created patient resource {}",
 				    fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(patientResource));
+				try {
+					producerService = new ProduceServiceImpl("PATIENT");
+					producerService.produce(patientResource.getId(),
+					    fhirContext.newJsonParser().encodeResourceToString(patientResource));
+				}
+				catch (ExecutionException | InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
