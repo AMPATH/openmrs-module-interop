@@ -29,4 +29,6 @@ public interface Subscribable<E extends OpenmrsObject & Auditable> extends Event
 	void setDaemonToken(@NotNull DaemonToken daemonToken);
 	
 	DaemonToken getDaemonToken();
+	
+	Publisher getPublisher();
 }

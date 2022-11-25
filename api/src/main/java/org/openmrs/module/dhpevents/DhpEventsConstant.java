@@ -7,19 +7,9 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.dhpevents.api;
+package org.openmrs.module.dhpevents;
 
-import javax.validation.constraints.NotNull;
-
-import org.hl7.fhir.instance.model.api.IAnyResource;
-
-public interface Publisher {
+public class DhpEventsConstant {
 	
-	/**
-	 * Publishes FHIR resource to a configured publisher e.g. kafka connect
-	 * 
-	 * @param resource Resource to be published.
-	 */
-	void publish(@NotNull IAnyResource resource);
-	
+	public static final String PUBLISHER_CLASS_NAME = "dhpevents.publisher";
 }

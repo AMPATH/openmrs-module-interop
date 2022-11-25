@@ -13,38 +13,32 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 
-import java.util.concurrent.ExecutionException;
-
 import ca.uhn.fhir.context.FhirContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Patient;
-import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.dhpevents.api.Subscribable;
-import org.openmrs.module.dhpevents.producer.api.ProducerService;
-import org.openmrs.module.dhpevents.producer.api.impl.ProduceServiceImpl;
-import org.openmrs.module.fhir2.api.translators.PatientTranslator;
+import org.openmrs.module.dhpevents.api.listeners.BaseObserver;
+import org.openmrs.module.fhir2.api.FhirPatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component("dhp.patientCreationListener")
-public class PatientCreationListener implements Subscribable<Patient> {
+public class PatientCreationListener extends BaseObserver implements Subscribable<Patient> {
 	
 	@Setter
 	@Getter
 	public DaemonToken daemonToken;
 	
 	@Autowired
-	private PatientTranslator patientTranslator;
-	
-	private ProducerService<String, String> producerService;
+	private FhirPatientService fhirPatientService;
 	
 	@Autowired
 	@Qualifier("fhirR4")
@@ -72,24 +66,16 @@ public class PatientCreationListener implements Subscribable<Patient> {
 			if (uuid == null || StringUtils.isBlank(uuid))
 				return;
 			
-			Patient patient = Context.getPatientService().getPatientByUuid(uuid);
+			org.hl7.fhir.r4.model.Patient patient = fhirPatientService.get(uuid);
 			if (patient == null) {
 				log.debug("could not find patient with uuid {}", uuid);
 			} else {
-				//Convert to fhir then publish to kafka
-				log.debug("Patient created: {}", patient.getUuid());
-				org.hl7.fhir.r4.model.Patient patientResource = patientTranslator.toFhirResource(patient);
+				//Convert to fhir then publish
+				log.debug("Patient created: {}", patient.getId());
 				
 				log.error("Created patient resource {}",
-				    fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(patientResource));
-				try {
-					producerService = new ProduceServiceImpl("PATIENT");
-					producerService.produce(patientResource.getId(),
-					    fhirContext.newJsonParser().encodeResourceToString(patientResource));
-				}
-				catch (ExecutionException | InterruptedException e) {
-					throw new RuntimeException(e);
-				}
+				    fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(patient));
+				this.getPublisher().publish(patient);
 			}
 		}
 	}
