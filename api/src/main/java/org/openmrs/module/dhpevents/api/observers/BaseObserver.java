@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.dhpevents.api.listeners;
+package org.openmrs.module.dhpevents.api.observers;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;

@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.dhpevents.api.listeners.patient;
+package org.openmrs.module.dhpevents.api.observers.patient;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -23,7 +23,7 @@ import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.dhpevents.api.Subscribable;
-import org.openmrs.module.dhpevents.api.listeners.BaseObserver;
+import org.openmrs.module.dhpevents.api.observers.BaseObserver;
 import org.openmrs.module.fhir2.api.FhirPatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component("dhp.patientCreationListener")
-public class PatientCreationListener extends BaseObserver implements Subscribable<Patient> {
+public class PatientCreationObserver extends BaseObserver implements Subscribable<Patient> {
 	
 	@Setter
 	@Getter
