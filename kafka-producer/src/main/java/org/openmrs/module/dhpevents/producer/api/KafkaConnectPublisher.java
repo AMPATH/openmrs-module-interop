@@ -7,16 +7,18 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.dhpevents.producer.api.impl;
+package org.openmrs.module.dhpevents.producer.api;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import java.util.concurrent.ExecutionException;
 
+import ca.uhn.fhir.parser.IParser;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.module.dhpevents.api.Publisher;
-import org.openmrs.module.dhpevents.producer.api.ProducerService;
+import org.openmrs.module.dhpevents.producer.api.impl.ProduceServiceImpl;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -24,11 +26,19 @@ import org.springframework.stereotype.Component;
 public class KafkaConnectPublisher implements Publisher {
 	
 	@Override
-	public void publish(@NotNull IAnyResource resource) {
+	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
 		ProducerService<String, String> producerService = new ProduceServiceImpl("PATIENT_CREATION");
 		try {
-			log.error("Resource: {}", resource.toString());
-			producerService.produce(resource.getId(), resource.toString());
+			log.debug("publish resource with ID {}", resource.getId());
+			String encodeResourceString = "";
+			if (parser != null) {
+				encodeResourceString = parser.encodeResourceToString(resource);
+			}
+			if (encodeResourceString == null || encodeResourceString.isEmpty()) {
+				encodeResourceString = resource.getId();
+				log.error("Resource with UUID {} isn't encoded", encodeResourceString);
+			}
+			producerService.produce(resource.getId(), encodeResourceString);
 		}
 		catch (ExecutionException | InterruptedException e) {
 			log.error("Error publishing resource with id {}", resource.getIdElement().getIdPart(), e);

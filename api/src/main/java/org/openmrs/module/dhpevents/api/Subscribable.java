@@ -9,8 +9,13 @@
  */
 package org.openmrs.module.dhpevents.api;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import java.util.Set;
+
+import ca.uhn.fhir.parser.IParser;
+import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.Auditable;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.event.Event;
@@ -31,4 +36,8 @@ public interface Subscribable<E extends OpenmrsObject & Auditable> extends Event
 	DaemonToken getDaemonToken();
 	
 	Publisher getPublisher();
+	
+	Set<Class<? extends Publisher>> getPublishers();
+	
+	void publish(@NotNull IAnyResource resource, @Nullable IParser parser);
 }

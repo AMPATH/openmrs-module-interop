@@ -9,8 +9,10 @@
  */
 package org.openmrs.module.dhpevents.api;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 
 public interface Publisher {
@@ -20,6 +22,6 @@ public interface Publisher {
 	 * 
 	 * @param resource Resource to be published.
 	 */
-	void publish(@NotNull IAnyResource resource);
+	void publish(@NotNull IAnyResource resource, @Nullable IParser parser);
 	
 }

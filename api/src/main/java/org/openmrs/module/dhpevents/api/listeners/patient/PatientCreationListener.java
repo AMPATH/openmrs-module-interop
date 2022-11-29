@@ -70,12 +70,9 @@ public class PatientCreationListener extends BaseObserver implements Subscribabl
 			if (patient == null) {
 				log.debug("could not find patient with uuid {}", uuid);
 			} else {
-				//Convert to fhir then publish
-				log.debug("Patient created: {}", patient.getId());
-				
-				log.error("Created patient resource {}",
-				    fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(patient));
-				this.getPublisher().publish(patient);
+				log.debug("Fhir Patient resource with UUID {} created", patient.getId());
+				//publish resource
+				publish(patient, fhirContext.newJsonParser());
 			}
 		}
 	}

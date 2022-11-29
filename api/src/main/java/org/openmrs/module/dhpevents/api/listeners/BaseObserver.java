@@ -9,16 +9,40 @@
  */
 package org.openmrs.module.dhpevents.api.listeners;
 
-import java.lang.reflect.InvocationTargetException;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+
+import ca.uhn.fhir.parser.IParser;
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhpevents.DhpEventsConstant;
 import org.openmrs.module.dhpevents.api.Publisher;
+import org.openmrs.module.dhpevents.utils.ClassUtils;
 
 @Slf4j
 public abstract class BaseObserver {
+	
+	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
+		this.getPublishers().forEach(publisher -> {
+			try {
+				publisher.getDeclaredConstructor().newInstance().publish(resource, parser);
+			}
+			catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				log.error("Unable to publish resource using {} Implementation", publisher.getSimpleName());
+				// log to db
+				throw new RuntimeException(e);
+			}
+		});
+	}
+	
+	public Set<Class<? extends Publisher>> getPublishers() {
+		return ClassUtils.getPublishers();
+	}
 	
 	public Publisher getPublisher() {
 		Class<?> publisherClass;
@@ -39,7 +63,6 @@ public abstract class BaseObserver {
 	}
 	
 	private String getPublisherClassName() {
-		return Context.getAdministrationService().getGlobalProperty(DhpEventsConstant.PUBLISHER_CLASS_NAME,
-		    "org.openmrs.module.dhpevents.producer.api.impl.kafkaConnectPublisher");
+		return Context.getAdministrationService().getGlobalProperty(DhpEventsConstant.PUBLISHER_CLASS_NAME, "");
 	}
 }
