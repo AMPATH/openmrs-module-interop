@@ -3,6 +3,11 @@ DHP Events
 
 Publish OpenMRS events as FHIR resources to kafka (Producer).
 
+Conceptual model overview
+-------------------------
+![AMRS DHP conceptual model drawio](https://user-images.githubusercontent.com/19473115/205644270-4fc7449e-2dde-4c0e-990e-d32835ac7e18.png)
+
+
 Building from Source
 --------------------
 You will need to have Java 1.6+ and Maven 2.x+ installed.  Use the command 'mvn package' to 
