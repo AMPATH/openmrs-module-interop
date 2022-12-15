@@ -1,7 +1,7 @@
-DHP Events
-==========================
+OpenMRS Interoperability Layer Module
+=====================================
 
-Publish OpenMRS events as FHIR resources to kafka (Producer).
+The OpenMRS interoperability layer module is based on the Fast Healthcare Interoperability Resources (FHIR) standard, which is a widely-used framework for exchanging health care data electronically. The interoperability layer module uses FHIR to define the events and data that can be exchanged between different EMR systems. By using FHIR, the interoperability layer module ensures that the data can be easily understood and used by other EMR systems, regardless of their specific implementations.
 
 Conceptual model overview
 -------------------------
