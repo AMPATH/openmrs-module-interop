@@ -1,21 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>org.openmrs.module</groupId>
         <artifactId>interop</artifactId>
+        <groupId>org.openmrs.module</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>interop-api</artifactId>
-    <packaging>jar</packaging>
-    <name>Interop API</name>
-    <description>API project for DHP Events</description>
+    <artifactId>openhim-connector</artifactId>
+    <name>OpenMRS OpenHIM Connector</name>
+    <description>Connects OpenMRS to OpenHIM Platform</description>
 
     <dependencies>
         <dependency>
-            <groupId>org.openmrs</groupId>
-            <artifactId>event-api</artifactId>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>interop-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.openmrs.module</groupId>
@@ -24,21 +26,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.10.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.javassist</groupId>
-                    <artifactId>javassist</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 
@@ -82,4 +69,5 @@
     <properties>
         <main.basedir>${project.parent.basedir}</main.basedir>
     </properties>
+
 </project>

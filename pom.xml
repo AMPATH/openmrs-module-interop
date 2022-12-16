@@ -9,13 +9,11 @@
     </parent>
 
     <groupId>org.openmrs.module</groupId>
-    <artifactId>dhpevents</artifactId>
+    <artifactId>interop</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>DHP Events</name>
-    <description>Connects OpenMRS with Digital Health Platform(DHP) via kafka message broker, export events as FHIR
-        resources.
-    </description>
+    <name>OpenMRS Interoperability Layer</name>
+    <description>The OpenMRS interoperability layer module is a plugin that allows OpenMRS to exchange data with other healthcare information systems.</description>
 
     <url>https://wiki.openmrs.org/x/FQ4z</url>
 
@@ -28,6 +26,10 @@
     <developers>
         <developer>
             <name>Bett Kipchumba</name>
+            <roles>
+                <role>Senior Software Engineer</role>
+            </roles>
+            <organization>AMPATH KE</organization>
         </developer>
     </developers>
 
@@ -35,6 +37,7 @@
         <module>api</module>
         <module>omod</module>
         <module>kafka-connector</module>
+        <module>openhim-connector</module>
     </modules>
 
     <repositories>
