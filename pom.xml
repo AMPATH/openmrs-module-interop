@@ -34,7 +34,7 @@
     <modules>
         <module>api</module>
         <module>omod</module>
-        <module>kafka-producer</module>
+        <module>kafka-connector</module>
     </modules>
 
     <repositories>

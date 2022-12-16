@@ -9,9 +9,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kafka-producer</artifactId>
+    <artifactId>kafka-connector</artifactId>
     <packaging>jar</packaging>
-    <name>Kafka Producer</name>
+    <name>Kafka Connector</name>
     <description>Publishes FHIR Resources to the KAFKA Server</description>
 
     <dependencies>
