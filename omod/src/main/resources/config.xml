@@ -6,13 +6,13 @@
 	<id>${project.parent.artifactId}</id>
 	<name>${project.parent.name}</name>
 	<version>${project.parent.version}</version>
-	<package>org.openmrs.module.dhpevents</package>
+	<package>org.openmrs.module.interop</package>
 	<author>corneliozbett</author>
 	<description>
 			${project.parent.description}
 	</description>
 
-	<activator>org.openmrs.module.dhpevents.DHPEventsActivator</activator>
+	<activator>org.openmrs.module.interop.DHPEventsActivator</activator>
 	
 	<!-- <updateURL>https://modules.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL> -->
 	<!-- /Base Module Properties -->
