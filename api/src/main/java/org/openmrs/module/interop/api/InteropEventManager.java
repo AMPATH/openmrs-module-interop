@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component("dhp.eventManager")
-public class DHPEventManager {
+@Component("interop.eventManager")
+public class InteropEventManager {
 	
 	@Setter
 	@Getter

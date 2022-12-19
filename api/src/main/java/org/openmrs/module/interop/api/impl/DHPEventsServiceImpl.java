@@ -10,6 +10,6 @@
 package org.openmrs.module.interop.api.impl;
 
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.interop.api.DHPEventsService;
+import org.openmrs.module.interop.api.InteropService;
 
-public class DHPEventsServiceImpl extends BaseOpenmrsService implements DHPEventsService {}
+public class DHPEventsServiceImpl extends BaseOpenmrsService implements InteropService {}

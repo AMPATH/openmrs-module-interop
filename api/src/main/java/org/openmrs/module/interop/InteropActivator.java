@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.DaemonTokenAware;
-import org.openmrs.module.interop.api.DHPEventManager;
+import org.openmrs.module.interop.api.InteropEventManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -22,10 +22,10 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class DHPEventsActivator extends BaseModuleActivator implements ApplicationContextAware, DaemonTokenAware {
+public class InteropActivator extends BaseModuleActivator implements ApplicationContextAware, DaemonTokenAware {
 	
 	@Autowired
-	private DHPEventManager eventManager;
+	private InteropEventManager eventManager;
 	
 	private static ApplicationContext applicationContext;
 	
@@ -54,11 +54,11 @@ public class DHPEventsActivator extends BaseModuleActivator implements Applicati
 	
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		DHPEventsActivator.applicationContext = applicationContext;
+		InteropActivator.applicationContext = applicationContext;
 	}
 	
 	@Override
 	public void setDaemonToken(DaemonToken token) {
-		DHPEventsActivator.daemonToken = token;
+		InteropActivator.daemonToken = token;
 	}
 }

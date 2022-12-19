@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.interop.DhpEventsConstant;
+import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Publisher;
 import org.openmrs.module.interop.utils.ClassUtils;
 
@@ -63,6 +63,6 @@ public abstract class BaseObserver {
 	}
 	
 	private String getPublisherClassName() {
-		return Context.getAdministrationService().getGlobalProperty(DhpEventsConstant.PUBLISHER_CLASS_NAME, "");
+		return Context.getAdministrationService().getGlobalProperty(InteropConstant.PUBLISHER_CLASS_NAME, "");
 	}
 }

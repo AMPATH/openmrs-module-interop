@@ -12,7 +12,7 @@
 			${project.parent.description}
 	</description>
 
-	<activator>org.openmrs.module.interop.DHPEventsActivator</activator>
+	<activator>org.openmrs.module.interop.InteropActivator</activator>
 	
 	<!-- <updateURL>https://modules.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL> -->
 	<!-- /Base Module Properties -->

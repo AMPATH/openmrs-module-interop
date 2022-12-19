@@ -9,10 +9,7 @@
  */
 package org.openmrs.module.interop;
 
-import org.springframework.stereotype.Component;
-
-@Component("dhpevents.DHPEventsConfig")
-public class DHPEventsConfig {
+public class InteropConstant {
 	
-	public final static String MODULE_PRIVILEGE = "DHP Events Privilege";
+	public static final String PUBLISHER_CLASS_NAME = "dhpevents.publisher";
 }

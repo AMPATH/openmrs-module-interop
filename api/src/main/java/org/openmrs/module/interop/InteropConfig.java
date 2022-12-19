@@ -7,8 +7,12 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop.api;
+package org.openmrs.module.interop;
 
-import org.openmrs.api.OpenmrsService;
+import org.springframework.stereotype.Component;
 
-public interface DHPEventsService extends OpenmrsService {}
+@Component("iterop.InteropConfig")
+public class InteropConfig {
+	
+	public final static String MODULE_PRIVILEGE = "DHP Events Privilege";
+}

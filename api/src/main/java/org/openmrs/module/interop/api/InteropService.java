@@ -7,9 +7,8 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop;
+package org.openmrs.module.interop.api;
 
-public class DhpEventsConstant {
-	
-	public static final String PUBLISHER_CLASS_NAME = "dhpevents.publisher";
-}
+import org.openmrs.api.OpenmrsService;
+
+public interface InteropService extends OpenmrsService {}
