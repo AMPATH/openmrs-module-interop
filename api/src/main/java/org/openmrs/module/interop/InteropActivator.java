@@ -39,7 +39,7 @@ public class InteropActivator extends BaseModuleActivator implements Application
 		//Events DHP events
 		this.eventManager.setDaemonToken(daemonToken);
 		this.eventManager.enableEvents();
-		log.info("Started DHP Events");
+		log.info("Started Interoperability Module");
 	}
 	
 	/**
@@ -49,7 +49,7 @@ public class InteropActivator extends BaseModuleActivator implements Application
 		//Disable all DHP Events
 		this.eventManager.setDaemonToken(daemonToken);
 		this.eventManager.disableEvents();
-		log.info("Shutdown DHP Events");
+		log.info("Shutdown Interoperability Module");
 	}
 	
 	@Override

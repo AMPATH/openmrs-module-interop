@@ -7,6 +7,9 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop;
+package org.openmrs.module.interop.api.impl;
 
-public class DHPEventsServiceTest {}
+import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.interop.api.InteropService;
+
+public class InteropServiceImpl extends BaseOpenmrsService implements InteropService {}

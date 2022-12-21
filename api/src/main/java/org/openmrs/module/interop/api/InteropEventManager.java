@@ -29,22 +29,22 @@ public class InteropEventManager {
 	public DaemonToken daemonToken;
 	
 	@Autowired
-	private List<? extends Subscribable<? extends OpenmrsObject>> dhpEvents;
+	private List<? extends Subscribable<? extends OpenmrsObject>> observers;
 	
 	public void enableEvents() {
-		log.info("Enabling DHP Events");
-		dhpEvents.forEach(e -> {
-			log.debug("Registering listener on {} with event {}", e.clazz(), e.action());
-			e.setDaemonToken(getDaemonToken());
-			Event.subscribe(e.clazz(), e.action().name(), e);
+		log.info("Enabling OpenMRS Interoperability Layer Events");
+		observers.forEach(observer -> {
+			log.debug("Registering listener on {} with event {}", observer.clazz(), observer.action());
+			observer.setDaemonToken(getDaemonToken());
+			Event.subscribe(observer.clazz(), observer.action().name(), observer);
 		});
 	}
 	
 	public void disableEvents() {
-		log.info("Disabling DHP Events");
-		dhpEvents.forEach(e -> {
-			e.setDaemonToken(getDaemonToken());
-			Event.unsubscribe(e.clazz(), e.action(), e);
+		log.info("Disabling OpenMRS Interoperability Layer Events");
+		observers.forEach(observer -> {
+			observer.setDaemonToken(getDaemonToken());
+			Event.unsubscribe(observer.clazz(), observer.action(), observer);
 		});
 	}
 }
