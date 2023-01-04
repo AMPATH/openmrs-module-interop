@@ -23,5 +23,11 @@ public interface Publisher {
 	 * @param resource Resource to be published.
 	 */
 	void publish(@NotNull IAnyResource resource, @Nullable IParser parser);
+
+	/**
+	 * Publishes FHIR resource (Not JSON encoded)
+	 * @param resource Resource to be published.
+	 */
+	void publish(@NotNull IAnyResource resource);
 	
 }

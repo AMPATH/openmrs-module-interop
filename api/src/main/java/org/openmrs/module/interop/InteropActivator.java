@@ -36,7 +36,6 @@ public class InteropActivator extends BaseModuleActivator implements Application
 	 */
 	public void started() {
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(this);
-		//Events DHP events
 		this.eventManager.setDaemonToken(daemonToken);
 		this.eventManager.enableEvents();
 		log.info("Started Interoperability Module");
