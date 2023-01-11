@@ -47,5 +47,26 @@
 		<file>messages_es.properties</file>
 	</messages>
 	<!-- /Internationalization -->
+
+	<globalProperty>
+		<property>@MODULE_ID@.kafkaClientId</property>
+		<description>Kafka client ID</description>
+		<defaultValue>demo</defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.kafkaServerURL</property>
+		<description>Kafka server URL. Please If you are using Ipv4 or Ipv6, you should specify the port number e.g. 127.0.0.1:9090 </description>
+		<defaultValue>127.0.0.1:9092</defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.kafkaKeySerializers</property>
+		<description>Kafka key serializers</description>
+		<defaultValue>org.apache.kafka.common.serialization.StringSerializer</defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.kafkaValueSerializers</property>
+		<description>Kafka value serializers</description>
+		<defaultValue>org.apache.kafka.common.serialization.StringSerializer</defaultValue>
+	</globalProperty>
 	
 </module>
