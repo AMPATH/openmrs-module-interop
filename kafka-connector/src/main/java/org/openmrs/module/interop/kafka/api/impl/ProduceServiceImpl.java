@@ -9,47 +9,32 @@
  */
 package org.openmrs.module.interop.kafka.api.impl;
 
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-
 import groovy.util.logging.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.openmrs.module.interop.kafka.KafkaConfiguration;
 import org.openmrs.module.interop.kafka.api.ProducerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public class ProduceServiceImpl implements ProducerService<String, String> {
 	
-	private final KafkaProducer<String, String> producer;
-	
-	private final String topic;
-	
-	public static final String KAFKA_SERVER_URL = "localhost";
-	
-	public static final int KAFKA_SERVER_PORT = 9092;
-	
-	public static final String CLIENT_ID = "demo-producer";
-	
-	public ProduceServiceImpl(String topic) {
-		this.topic = topic;
-		this.producer = new KafkaProducer<>(getProperties());
-	}
-	
-	private Properties getProperties() {
-		Properties properties = new Properties();
-		properties.put("bootstrap.servers", KAFKA_SERVER_URL + ":" + KAFKA_SERVER_PORT);
-		properties.put("client.id", CLIENT_ID);
-		properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		return properties;
-	}
+	@Autowired
+	private KafkaConfiguration config;
 	
 	@Override
-	public void produce(String key, String value) throws ExecutionException, InterruptedException {
+	public void produce(String topic, String key, String value) {
 		long startTime = System.currentTimeMillis();
-		RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, value)).get();
-		System.out.println("Message with id: '" + key + "' sent to partition(" + metadata.partition() + "), offset("
-		        + metadata.offset() + ") in " + (System.currentTimeMillis() - startTime) + " ms");
+		try (KafkaProducer<String, String> producer = new KafkaProducer<>(config.getProperties())) {
+			RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, value)).get();
+			System.out.println("Message with id: '" + key + "' sent to partition(" + metadata.partition() + "), offset("
+			        + metadata.offset() + ") in " + (System.currentTimeMillis() - startTime) + " ms");
+		}
+		catch (Exception e) {
+			// error handling code
+		}
 	}
 }

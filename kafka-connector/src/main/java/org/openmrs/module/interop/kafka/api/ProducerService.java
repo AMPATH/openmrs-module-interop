@@ -9,10 +9,8 @@
  */
 package org.openmrs.module.interop.kafka.api;
 
-import java.util.concurrent.ExecutionException;
-
 public interface ProducerService<K, V> {
 	
-	void produce(K key, V value) throws ExecutionException, InterruptedException;
+	void produce(String topic, K key, V value);
 	
 }

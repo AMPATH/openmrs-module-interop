@@ -12,37 +12,36 @@ package org.openmrs.module.interop.kafka.api;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import java.util.concurrent.ExecutionException;
-
 import ca.uhn.fhir.parser.IParser;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.module.interop.api.Publisher;
-import org.openmrs.module.interop.kafka.api.impl.ProduceServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class KafkaConnectPublisher implements Publisher {
 	
+	@Autowired
+	private ProducerService<String, String> producerService;
+	
 	@Override
 	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
-		ProducerService<String, String> producerService = new ProduceServiceImpl("PATIENT_CREATION");
-		try {
-			log.debug("publish resource with ID {}", resource.getId());
-			String encodeResourceString = "";
-			if (parser != null) {
-				encodeResourceString = parser.encodeResourceToString(resource);
-			}
-			if (encodeResourceString == null || encodeResourceString.isEmpty()) {
-				encodeResourceString = resource.getId();
-				log.error("Resource with UUID {} isn't encoded", encodeResourceString);
-			}
-			producerService.produce(resource.getId(), encodeResourceString);
+		log.debug("publish resource with ID {}", resource.getId());
+		String encodeResourceString = "";
+		if (parser != null) {
+			encodeResourceString = parser.encodeResourceToString(resource);
 		}
-		catch (ExecutionException | InterruptedException e) {
-			log.error("Error publishing resource with id {}", resource.getIdElement().getIdPart(), e);
-			throw new RuntimeException(e);
+		if (encodeResourceString == null || encodeResourceString.isEmpty()) {
+			encodeResourceString = resource.getId();
+			log.error("Resource with UUID {} isn't encoded", encodeResourceString);
 		}
+		producerService.produce(resource.fhirType(), resource.getId(), encodeResourceString);
+	}
+	
+	@Override
+	public void publish(IAnyResource resource) {
+		
 	}
 }

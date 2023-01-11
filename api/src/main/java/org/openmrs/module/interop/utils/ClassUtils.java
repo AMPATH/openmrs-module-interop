@@ -17,7 +17,7 @@ import org.reflections.Reflections;
 public class ClassUtils {
 	
 	public static Set<Class<? extends Publisher>> getPublishers() {
-		Reflections reflections = new Reflections("org.openmrs.module.dhpevents");
+		Reflections reflections = new Reflections("org.openmrs.module.interop");
 		//using query functions
 		//reflections.get(SubTypes.of(Publisher.class).asClass());
 		return reflections.getSubTypesOf(Publisher.class);

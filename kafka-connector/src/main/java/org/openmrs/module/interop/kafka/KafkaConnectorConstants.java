@@ -9,8 +9,14 @@
  */
 package org.openmrs.module.interop.kafka;
 
-public class KafkaProducerConstants {
+public class KafkaConnectorConstants {
 	
-	public static final String PREFIX = "";
+	public static final String GP_KAFKA_SERVER_URL = "interop.kafkaServerURL";
+	
+	public static final String GP_KAFKA_CLIENT_ID = "interop.kafkaClientId";
+	
+	public static final String GP_KAFKA_KEY_SERIALIZERS = "interop.kafkaKeySerializers";
+	
+	public static final String GP_KAFKA_VALUE_SERIALIZERS = "interop.kafkaValueSerializers";
 	
 }
