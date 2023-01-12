@@ -14,5 +14,5 @@ import org.springframework.stereotype.Component;
 @Component("iterop.InteropConfig")
 public class InteropConfig {
 	
-	public final static String MODULE_PRIVILEGE = "DHP Events Privilege";
+	public final static String MODULE_PRIVILEGE = "Interoperability Layer Privilege";
 }
