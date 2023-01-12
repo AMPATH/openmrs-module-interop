@@ -21,7 +21,8 @@ public class KafkaProducer {
 	public static void produce(String topic, String key, String value) {
 		long startTime = System.currentTimeMillis();
 		KafkaConfiguration config = Context.getRegisteredComponent("iterop.kafkaConfiguration", KafkaConfiguration.class);
-		try (org.apache.kafka.clients.producer.KafkaProducer<String, String> producer = new org.apache.kafka.clients.producer.KafkaProducer<>(config.getProperties())) {
+		try (org.apache.kafka.clients.producer.KafkaProducer<String, String> producer = new org.apache.kafka.clients.producer.KafkaProducer<>(
+		        config.getProperties())) {
 			RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, value)).get();
 			System.out.println("Message with id: '" + key + "' sent to partition(" + metadata.partition() + "), offset("
 			        + metadata.offset() + ") in " + (System.currentTimeMillis() - startTime) + " ms");

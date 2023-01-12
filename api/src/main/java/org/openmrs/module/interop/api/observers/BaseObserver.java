@@ -29,6 +29,7 @@ public abstract class BaseObserver {
 	
 	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
 		this.getPublishers().forEach(publisher -> {
+			log.debug("Publishing resource with ID {} to {}", resource.getId(), publisher.getSimpleName());
 			try {
 				publisher.getDeclaredConstructor().newInstance().publish(resource, parser);
 			}

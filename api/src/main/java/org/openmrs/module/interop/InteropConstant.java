@@ -11,5 +11,5 @@ package org.openmrs.module.interop;
 
 public class InteropConstant {
 	
-	public static final String PUBLISHER_CLASS_NAME = "dhpevents.publisher";
+	public static final String PUBLISHER_CLASS_NAME = "interop.publisher";
 }
