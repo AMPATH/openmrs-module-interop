@@ -9,6 +9,10 @@
  */
 package org.openmrs.module.interop.openhim;
 
-public class OpenhimConfig {
+public class OpenhimConstants {
+	
+	public static final String GP_OPENHIM_BASE_URL = "interop.openhimBaseURL";
+	
+	public static final String GP_OPENHIM_SUFFIX = "interop.openhimBaseURLSuffix";
 	
 }

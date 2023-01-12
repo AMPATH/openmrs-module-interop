@@ -48,6 +48,7 @@
 	</messages>
 	<!-- /Internationalization -->
 
+	<!-- Kafka configuration	-->
 	<globalProperty>
 		<property>@MODULE_ID@.kafkaClientId</property>
 		<description>Kafka client ID</description>
@@ -67,6 +68,18 @@
 		<property>@MODULE_ID@.kafkaValueSerializers</property>
 		<description>Kafka value serializers</description>
 		<defaultValue>org.apache.kafka.common.serialization.StringSerializer</defaultValue>
+	</globalProperty>
+
+	<!-- Openhim configuration-->
+	<globalProperty>
+		<property>@MODULE_ID@.openhimBaseURL</property>
+		<description>OpenHIM base URL e.g http://localhost:5001</description>
+		<defaultValue>localhost</defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.openhimBaseURLSuffix</property>
+		<description>OpenHIM base URL suffix e.g /fhir/v4 </description>
+		<defaultValue>/fhir/v4</defaultValue>
 	</globalProperty>
 	
 </module>
