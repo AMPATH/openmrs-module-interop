@@ -16,15 +16,11 @@ import ca.uhn.fhir.parser.IParser;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.module.interop.api.Publisher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class KafkaConnectPublisher implements Publisher {
-	
-	@Autowired
-	private ProducerService<String, String> producerService;
 	
 	@Override
 	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
@@ -37,7 +33,7 @@ public class KafkaConnectPublisher implements Publisher {
 			encodeResourceString = resource.getId();
 			log.error("Resource with UUID {} isn't encoded", encodeResourceString);
 		}
-		producerService.produce(resource.fhirType(), resource.getId(), encodeResourceString);
+		KafkaProducer.produce(resource.fhirType(), resource.getId(), encodeResourceString);
 	}
 	
 	@Override

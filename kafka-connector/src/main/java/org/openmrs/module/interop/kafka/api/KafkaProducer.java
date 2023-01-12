@@ -7,28 +7,21 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop.kafka.api.impl;
+package org.openmrs.module.interop.kafka.api;
 
 import groovy.util.logging.Slf4j;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.interop.kafka.KafkaConfiguration;
-import org.openmrs.module.interop.kafka.api.ProducerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
-public class ProduceServiceImpl implements ProducerService<String, String> {
+public class KafkaProducer {
 	
-	@Autowired
-	private KafkaConfiguration config;
-	
-	@Override
-	public void produce(String topic, String key, String value) {
+	public static void produce(String topic, String key, String value) {
 		long startTime = System.currentTimeMillis();
-		try (KafkaProducer<String, String> producer = new KafkaProducer<>(config.getProperties())) {
+		KafkaConfiguration config = Context.getRegisteredComponent("iterop.kafkaConfiguration", KafkaConfiguration.class);
+		try (org.apache.kafka.clients.producer.KafkaProducer<String, String> producer = new org.apache.kafka.clients.producer.KafkaProducer<>(config.getProperties())) {
 			RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, value)).get();
 			System.out.println("Message with id: '" + key + "' sent to partition(" + metadata.partition() + "), offset("
 			        + metadata.offset() + ") in " + (System.currentTimeMillis() - startTime) + " ms");
