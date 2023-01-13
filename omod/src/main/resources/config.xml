@@ -50,6 +50,11 @@
 
 	<!-- Kafka configuration	-->
 	<globalProperty>
+		<property>@MODULE_ID@.enableKafka</property>
+		<description>Only set to true if you want to publish messages to a configured Kafka Instance</description>
+		<defaultValue>false</defaultValue>
+	</globalProperty>
+	<globalProperty>
 		<property>@MODULE_ID@.kafkaClientId</property>
 		<description>Kafka client ID</description>
 		<defaultValue>demo</defaultValue>
