@@ -69,6 +69,12 @@ public abstract class BaseObserver {
 	
 	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
 		this.getPublishers().forEach(publisher -> {
+			String isKafkaEnabled = Context.getAdministrationService().getGlobalProperty(InteropConstant.GP_KAFKA_STATUS,
+			    "false");
+			if (!Boolean.getBoolean(isKafkaEnabled)) {
+				if (publisher.getSimpleName().equals("KafkaConnectPublisher"))
+					return;
+			}
 			log.debug("Publishing resource with ID {} to {}", resource.getId(), publisher.getSimpleName());
 			try {
 				publisher.getDeclaredConstructor().newInstance().publish(resource, parser);
