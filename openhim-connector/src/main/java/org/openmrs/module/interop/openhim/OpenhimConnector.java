@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Publisher;
 import org.openmrs.module.interop.openhim.api.OpenhimClient;
 import org.slf4j.Logger;
@@ -51,5 +52,16 @@ public class OpenhimConnector implements Publisher {
 	@Override
 	public void publish(IAnyResource resource) {
 		this.publish(resource, null);
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return Boolean.parseBoolean(
+		    Context.getAdministrationService().getGlobalProperty(InteropConstant.GP_ENABLE_OPENHIM, "false"));
+	}
+	
+	@Override
+	public boolean verifyConnection() {
+		return Publisher.super.verifyConnection();
 	}
 }

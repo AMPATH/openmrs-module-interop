@@ -19,16 +19,24 @@ public interface Publisher {
 	
 	/**
 	 * Publishes FHIR resource to a configured publisher e.g. kafka connect
-	 * 
+	 *
 	 * @param resource Resource to be published.
 	 */
 	void publish(@NotNull IAnyResource resource, @Nullable IParser parser);
 	
 	/**
 	 * Publishes FHIR resource (Not JSON encoded)
-	 * 
+	 *
 	 * @param resource Resource to be published.
 	 */
 	void publish(@NotNull IAnyResource resource);
+	
+	default boolean isEnabled() {
+		return false;
+	}
+	
+	default boolean verifyConnection() {
+		return true;
+	}
 	
 }
