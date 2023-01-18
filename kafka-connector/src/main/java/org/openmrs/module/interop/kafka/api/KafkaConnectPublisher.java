@@ -14,8 +14,13 @@ import javax.validation.constraints.NotNull;
 
 import ca.uhn.fhir.parser.IParser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.hl7.fhir.instance.model.api.IAnyResource;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Publisher;
+import org.openmrs.module.interop.kafka.KafkaConfiguration;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -39,5 +44,25 @@ public class KafkaConnectPublisher implements Publisher {
 	@Override
 	public void publish(IAnyResource resource) {
 		
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return Boolean.parseBoolean(
+		    Context.getAdministrationService().getGlobalProperty(InteropConstant.GP_ENABLE_KAFKA, "false"));
+	}
+	
+	@Override
+	public boolean verifyConnection() {
+		KafkaConfiguration config = Context.getRegisteredComponent("iterop.kafkaConfiguration", KafkaConfiguration.class);
+		try (AdminClient adminClient = AdminClient.create(config.getProperties())) {
+			ListTopicsResult topics = adminClient.listTopics();
+			topics.names().get();
+			return true;
+		}
+		catch (Exception exc) {
+			log.error("Unable to verified connection properties", exc);
+			return false;
+		}
 	}
 }

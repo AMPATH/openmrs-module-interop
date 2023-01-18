@@ -36,7 +36,6 @@ public class PatientCreationObserver extends BaseObserver implements Subscribabl
 	
 	@Override
 	public void onMessage(Message message) {
-		log.debug("Patient created message received {}", message);
 		Daemon.runInDaemonThread(() -> processMessage(fhirContext, fhirPatientService, message), getDaemonToken());
 	}
 	

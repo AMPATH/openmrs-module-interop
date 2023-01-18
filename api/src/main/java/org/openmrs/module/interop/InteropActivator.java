@@ -9,11 +9,15 @@
  */
 package org.openmrs.module.interop;
 
+import java.lang.reflect.InvocationTargetException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.DaemonTokenAware;
 import org.openmrs.module.interop.api.InteropEventManager;
+import org.openmrs.module.interop.api.Publisher;
+import org.openmrs.module.interop.utils.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -38,6 +42,21 @@ public class InteropActivator extends BaseModuleActivator implements Application
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(this);
 		this.eventManager.setDaemonToken(daemonToken);
 		this.eventManager.enableEvents();
+		
+		//Verify only enabled publishers configured connections
+		for (Class<? extends Publisher> publisher : ClassUtils.getPublishers()) {
+			try {
+				Publisher newInstancePublisher = publisher.getDeclaredConstructor().newInstance();
+				if (newInstancePublisher.isEnabled()) {
+					if (newInstancePublisher.verifyConnection()) {
+						log.error("{} verification was successful", publisher.getSimpleName());
+					}
+				}
+			}
+			catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		log.info("Started Interoperability Module");
 	}
 	

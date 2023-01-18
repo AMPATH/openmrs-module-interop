@@ -77,6 +77,11 @@
 
 	<!-- Openhim configuration-->
 	<globalProperty>
+		<property>@MODULE_ID@.enableOpenHIM</property>
+		<description>Only set to true if you want to publish messages to a configured OpenHIM Instance</description>
+		<defaultValue>false</defaultValue>
+	</globalProperty>
+	<globalProperty>
 		<property>@MODULE_ID@.openhimBaseURL</property>
 		<description>OpenHIM base URL e.g http://localhost:5001</description>
 		<defaultValue>localhost</defaultValue>
