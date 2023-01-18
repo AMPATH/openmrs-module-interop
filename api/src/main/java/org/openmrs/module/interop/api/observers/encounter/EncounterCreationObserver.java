@@ -11,12 +11,14 @@ package org.openmrs.module.interop.api.observers.encounter;
 
 import javax.jms.Message;
 
+import java.util.Optional;
+
 import ca.uhn.fhir.context.FhirContext;
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.Encounter;
+import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
-import org.openmrs.module.fhir2.api.FhirEncounterService;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.observers.BaseObserver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +33,6 @@ public class EncounterCreationObserver extends BaseObserver implements Subscriba
 	@Qualifier("fhirR4")
 	private FhirContext fhirContext;
 	
-	@Autowired
-	private FhirEncounterService fhirEncounterService;
-	
 	@Override
 	public Class<?> clazz() {
 		return Encounter.class;
@@ -46,7 +45,21 @@ public class EncounterCreationObserver extends BaseObserver implements Subscriba
 	
 	@Override
 	public void onMessage(Message message) {
-		log.debug("Patient created message received {}", message);
-		Daemon.runInDaemonThread(() -> processMessage(fhirContext, fhirEncounterService, message), getDaemonToken());
+		log.debug("Encounter message received {}", message);
+		Daemon.runInDaemonThread(() -> preProcessEncounterMessage(processMessage(message)), getDaemonToken());
 	}
+	
+	protected void preProcessEncounterMessage(Optional<String> encounterUuid) {
+		//Create bundle
+		encounterUuid.ifPresent(uuid -> {
+			Encounter encounter = Context.getEncounterService().getEncounterByUuid(uuid);
+			
+			// Get observations & other referenced resources from encounter convert to FHIR then add to the bundle.
+			
+		});
+		
+		// now publish the bundle
+		// publish(bundle, context.newJsonParser());
+	}
+	
 }

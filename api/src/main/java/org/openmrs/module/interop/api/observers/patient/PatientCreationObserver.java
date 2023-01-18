@@ -11,6 +11,8 @@ package org.openmrs.module.interop.api.observers.patient;
 
 import javax.jms.Message;
 
+import java.util.Optional;
+
 import ca.uhn.fhir.context.FhirContext;
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.Patient;
@@ -36,7 +38,13 @@ public class PatientCreationObserver extends BaseObserver implements Subscribabl
 	
 	@Override
 	public void onMessage(Message message) {
-		Daemon.runInDaemonThread(() -> processMessage(fhirContext, fhirPatientService, message), getDaemonToken());
+		Daemon.runInDaemonThread(() -> preProcessPatientMessage(processMessage(message)), getDaemonToken());
+	}
+	
+	private void preProcessPatientMessage(Optional<String> patientUuid) {
+		patientUuid.ifPresent((uuid) -> {
+			publish(fhirPatientService.get(uuid), fhirContext.newJsonParser());
+		});
 	}
 	
 	@Override
@@ -46,6 +54,6 @@ public class PatientCreationObserver extends BaseObserver implements Subscribabl
 	
 	@Override
 	public Event.Action action() {
-		return Event.Action.CREATED;
+		return Event.Action.UPDATED;
 	}
 }

@@ -16,19 +16,17 @@ import javax.jms.Message;
 import javax.validation.constraints.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.Set;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.DaemonToken;
-import org.openmrs.module.fhir2.api.FhirService;
 import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Publisher;
 import org.openmrs.module.interop.utils.ClassUtils;
@@ -40,7 +38,13 @@ public abstract class BaseObserver {
 	@Getter
 	public DaemonToken daemonToken;
 	
-	protected void processMessage(FhirContext context, FhirService<? extends IAnyResource> fhirService, Message message) {
+	/**
+	 * Process the message and gets the UUID of the OpenMRS Object modified or created, or deleted
+	 * 
+	 * @param message the emitted event message to be processed.
+	 * @return UUID of the OpenMRS Object
+	 */
+	protected Optional<String> processMessage(Message message) {
 		if (message instanceof MapMessage) {
 			MapMessage mapMessage = (MapMessage) message;
 			String uuid;
@@ -50,21 +54,11 @@ public abstract class BaseObserver {
 			}
 			catch (JMSException e) {
 				log.error("Exception caught while trying to get patient uuid for event", e);
-				return;
+				return Optional.empty();
 			}
-			
-			if (uuid == null || StringUtils.isBlank(uuid))
-				return;
-			
-			IAnyResource resource = fhirService.get(uuid);
-			if (resource == null) {
-				log.debug("could not find patient with uuid {}", uuid);
-			} else {
-				log.debug("Fhir Patient resource with UUID {} created", resource.getId());
-				//publish resource
-				publish(resource, context.newJsonParser());
-			}
+			return Optional.of(uuid);
 		}
+		return Optional.empty();
 	}
 	
 	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
