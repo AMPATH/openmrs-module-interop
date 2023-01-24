@@ -16,4 +16,8 @@ public class InteropConstant {
 	public static final String GP_ENABLE_KAFKA = "interop.enableKafka";
 	
 	public static final String GP_ENABLE_OPENHIM = "interop.enableOpenHIM";
+
+	public static final String CREATED = "CREATED";
+
+	public static final String UPDATED = "UPDATED";
 }
