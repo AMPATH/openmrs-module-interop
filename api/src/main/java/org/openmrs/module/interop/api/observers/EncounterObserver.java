@@ -7,10 +7,12 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop.api.observers.encounter;
+package org.openmrs.module.interop.api.observers;
 
 import javax.jms.Message;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -20,14 +22,13 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.interop.api.Subscribable;
-import org.openmrs.module.interop.api.observers.BaseObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component("interop.encounterCreationObserver")
-public class EncounterCreationObserver extends BaseObserver implements Subscribable<Encounter> {
+public class EncounterObserver extends BaseObserver implements Subscribable<Encounter> {
 	
 	@Autowired
 	@Qualifier("fhirR4")
@@ -39,8 +40,8 @@ public class EncounterCreationObserver extends BaseObserver implements Subscriba
 	}
 	
 	@Override
-	public Event.Action action() {
-		return Event.Action.CREATED;
+	public List<Event.Action> actions() {
+		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.VOIDED);
 	}
 	
 	@Override
@@ -61,5 +62,4 @@ public class EncounterCreationObserver extends BaseObserver implements Subscriba
 		// now publish the bundle
 		// publish(bundle, context.newJsonParser());
 	}
-	
 }

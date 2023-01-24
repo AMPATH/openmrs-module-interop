@@ -7,27 +7,30 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop.api.observers.patient;
+package org.openmrs.module.interop.api.observers;
 
 import javax.jms.Message;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import ca.uhn.fhir.context.FhirContext;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.FhirPatientService;
 import org.openmrs.module.interop.api.Subscribable;
-import org.openmrs.module.interop.api.observers.BaseObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component("interop.patientCreationListener")
-public class PatientCreationObserver extends BaseObserver implements Subscribable<Patient> {
+@Setter
+@Component("interop.patientObserver")
+public class PatientObserver extends BaseObserver implements Subscribable<Patient> {
 	
 	@Autowired
 	private FhirPatientService fhirPatientService;
@@ -38,13 +41,11 @@ public class PatientCreationObserver extends BaseObserver implements Subscribabl
 	
 	@Override
 	public void onMessage(Message message) {
-		Daemon.runInDaemonThread(() -> preProcessPatientMessage(processMessage(message)), getDaemonToken());
+		Daemon.runInDaemonThread(() -> processPatientMessage(processMessage(message)), getDaemonToken());
 	}
 	
-	private void preProcessPatientMessage(Optional<String> patientUuid) {
-		patientUuid.ifPresent((uuid) -> {
-			publish(fhirPatientService.get(uuid), fhirContext.newJsonParser());
-		});
+	private void processPatientMessage(Optional<String> patientUuid) {
+		patientUuid.ifPresent((uuid) -> publish(fhirPatientService.get(uuid), fhirContext.newJsonParser()));
 	}
 	
 	@Override
@@ -53,7 +54,8 @@ public class PatientCreationObserver extends BaseObserver implements Subscribabl
 	}
 	
 	@Override
-	public Event.Action action() {
-		return Event.Action.UPDATED;
+	public List<Event.Action> actions() {
+		// make this configurable using GPs
+		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.VOIDED);
 	}
 }
