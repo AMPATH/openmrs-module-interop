@@ -9,10 +9,9 @@
  */
 package org.openmrs.module.interop.kafka.api;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.context.FhirContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
@@ -25,15 +24,13 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class KafkaConnectPublisher implements Publisher {
+public class KafkaConnector implements Publisher {
 	
 	@Override
-	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
-		log.debug("publish resource with ID {}", resource.getId());
-		String encodeResourceString = "";
-		if (parser != null) {
-			encodeResourceString = parser.encodeResourceToString(resource);
-		}
+	public void publish(@NotNull FhirContext context, @NotNull IAnyResource resource) {
+		log.error("publish resource with ID {}", resource.getId());
+		String encodeResourceString = context.newJsonParser().encodeResourceToString(resource);
+		;
 		if (encodeResourceString == null || encodeResourceString.isEmpty()) {
 			encodeResourceString = resource.getId();
 			log.error("Resource with UUID {} isn't encoded", encodeResourceString);

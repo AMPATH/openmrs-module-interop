@@ -9,10 +9,9 @@
  */
 package org.openmrs.module.interop.api;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.context.FhirContext;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 
 public interface Publisher {
@@ -22,7 +21,7 @@ public interface Publisher {
 	 *
 	 * @param resource Resource to be published.
 	 */
-	void publish(@NotNull IAnyResource resource, @Nullable IParser parser);
+	void publish(@NotNull FhirContext context, @NotNull IAnyResource resource);
 	
 	/**
 	 * Publishes FHIR resource (Not JSON encoded)
