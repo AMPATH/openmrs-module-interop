@@ -10,29 +10,23 @@
 package org.openmrs.module.interop.api.observers;
 
 import javax.jms.Message;
+import javax.validation.constraints.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import ca.uhn.fhir.context.FhirContext;
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.Encounter;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.interop.api.Subscribable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component("interop.encounterCreationObserver")
 public class EncounterObserver extends BaseObserver implements Subscribable<Encounter> {
-	
-	@Autowired
-	@Qualifier("fhirR4")
-	private FhirContext fhirContext;
 	
 	@Override
 	public Class<?> clazz() {
@@ -41,23 +35,20 @@ public class EncounterObserver extends BaseObserver implements Subscribable<Enco
 	
 	@Override
 	public List<Event.Action> actions() {
-		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.VOIDED);
+		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.VOIDED, Event.Action.UNVOIDED);
 	}
 	
 	@Override
 	public void onMessage(Message message) {
-		log.debug("Encounter message received {}", message);
-		Daemon.runInDaemonThread(() -> preProcessEncounterMessage(processMessage(message)), getDaemonToken());
+		processMessage(message).ifPresent(metadata -> {
+			Daemon.runInDaemonThread(() -> prepareEncounterMessage(metadata), getDaemonToken());
+		});
 	}
 	
-	protected void preProcessEncounterMessage(Optional<String> encounterUuid) {
+	protected void prepareEncounterMessage(@NotNull EventMetadata metadata) {
 		//Create bundle
-		encounterUuid.ifPresent(uuid -> {
-			Encounter encounter = Context.getEncounterService().getEncounterByUuid(uuid);
-			
-			// Get observations & other referenced resources from encounter convert to FHIR then add to the bundle.
-			
-		});
+		Encounter encounter = Context.getEncounterService().getEncounterByUuid(metadata.getString("uuid"));
+		// Get observations & other referenced resources from encounter convert to FHIR then add to the bundle.
 		
 		// now publish the bundle
 		// publish(bundle, context.newJsonParser());
