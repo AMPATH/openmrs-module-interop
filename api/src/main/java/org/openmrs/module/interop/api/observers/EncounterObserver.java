@@ -12,7 +12,6 @@ package org.openmrs.module.interop.api.observers;
 import javax.jms.Message;
 import javax.validation.constraints.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +21,7 @@ import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
+import org.openmrs.module.interop.utils.ObserverUtils;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -35,7 +35,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<Enco
 	
 	@Override
 	public List<Event.Action> actions() {
-		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.VOIDED, Event.Action.UNVOIDED);
+		return ObserverUtils.voidableEntityActions();
 	}
 	
 	@Override

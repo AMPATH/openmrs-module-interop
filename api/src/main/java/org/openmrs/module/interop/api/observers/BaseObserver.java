@@ -83,7 +83,6 @@ public abstract class BaseObserver {
 		if (destinationMessage.isPresent()) {
 			action = destinationMessage.get().split(":(?://)?")[1];
 		}
-		log.error("Action:: {}", action);
 		switch (action) {
 			case "CREATED":
 				return Optional.of(Event.Action.CREATED);

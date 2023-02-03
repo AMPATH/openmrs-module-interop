@@ -12,7 +12,6 @@ package org.openmrs.module.interop.api.observers;
 import javax.jms.Message;
 import javax.validation.constraints.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 import lombok.Setter;
@@ -23,6 +22,7 @@ import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.FhirPatientService;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
+import org.openmrs.module.interop.utils.ObserverUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,7 +57,6 @@ public class PatientObserver extends BaseObserver implements Subscribable<Patien
 	
 	@Override
 	public List<Event.Action> actions() {
-		// make this configurable using GPs
-		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.VOIDED);
+		return ObserverUtils.voidableEntityActions();
 	}
 }
