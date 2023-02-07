@@ -11,9 +11,8 @@ package org.openmrs.module.interop;
 
 public class InteropConstant {
 	
-	public static final String PUBLISHER_CLASS_NAME = "interop.publisher";
-	
 	public static final String GP_ENABLE_KAFKA = "interop.enableKafka";
 	
 	public static final String GP_ENABLE_OPENHIM = "interop.enableOpenHIM";
+	
 }

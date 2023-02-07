@@ -49,7 +49,7 @@ public class InteropActivator extends BaseModuleActivator implements Application
 				Publisher newInstancePublisher = publisher.getDeclaredConstructor().newInstance();
 				if (newInstancePublisher.isEnabled()) {
 					if (newInstancePublisher.verifyConnection()) {
-						log.error("{} verification was successful", publisher.getSimpleName());
+						log.debug("{} verification was successful", publisher.getSimpleName());
 					}
 				}
 			}
@@ -64,7 +64,6 @@ public class InteropActivator extends BaseModuleActivator implements Application
 	 * @see #shutdown()
 	 */
 	public void shutdown() {
-		//Disable all DHP Events
 		this.eventManager.setDaemonToken(daemonToken);
 		this.eventManager.disableEvents();
 		log.info("Shutdown Interoperability Module");

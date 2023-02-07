@@ -34,9 +34,11 @@ public class InteropEventManager {
 	public void enableEvents() {
 		log.info("Enabling OpenMRS Interoperability Layer Events");
 		observers.forEach(observer -> {
-			log.debug("Registering listener on {} with event {}", observer.clazz(), observer.action());
 			observer.setDaemonToken(getDaemonToken());
-			Event.subscribe(observer.clazz(), observer.action().name(), observer);
+			observer.actions().forEach(action -> {
+				log.debug("Registering observer on {} with event {}", observer.clazz(), action.name());
+				Event.subscribe(observer.clazz(), action.name(), observer);
+			});
 		});
 	}
 	
@@ -44,7 +46,10 @@ public class InteropEventManager {
 		log.info("Disabling OpenMRS Interoperability Layer Events");
 		observers.forEach(observer -> {
 			observer.setDaemonToken(getDaemonToken());
-			Event.unsubscribe(observer.clazz(), observer.action(), observer);
+			observer.actions().forEach(action -> {
+				log.debug("Unsubscribing {} observer with event {}", observer.clazz(), action.name());
+				Event.unsubscribe(observer.clazz(), action, observer);
+			});
 		});
 	}
 }

@@ -9,29 +9,27 @@
  */
 package org.openmrs.module.interop.openhim;
 
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
-import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.context.FhirContext;
+import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Publisher;
 import org.openmrs.module.interop.openhim.api.OpenhimClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class OpenhimConnector implements Publisher {
 	
-	private static final Logger log = LoggerFactory.getLogger(OpenhimConnector.class);
-	
 	@Override
-	public void publish(IAnyResource resource, @Nullable IParser parser) {
+	public void publish(@NotNull FhirContext context, @NotNull IAnyResource resource) {
 		log.debug("publish resource with ID {}", resource.getId());
 		String encodeResourceString = "";
-		if (parser != null) {
-			encodeResourceString = parser.encodeResourceToString(resource);
+		if (context != null) {
+			encodeResourceString = context.newJsonParser().encodeResourceToString(resource);
 		}
 		if (encodeResourceString == null || encodeResourceString.isEmpty()) {
 			encodeResourceString = resource.getId();
@@ -51,7 +49,6 @@ public class OpenhimConnector implements Publisher {
 	
 	@Override
 	public void publish(IAnyResource resource) {
-		this.publish(resource, null);
 	}
 	
 	@Override

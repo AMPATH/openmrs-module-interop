@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.interop.api.observers;
 
-import javax.annotation.Nullable;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -19,20 +18,27 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Set;
 
-import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.context.FhirContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IAnyResource;
-import org.openmrs.api.APIException;
-import org.openmrs.api.context.Context;
+import org.openmrs.event.Event;
 import org.openmrs.module.DaemonToken;
-import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Publisher;
+import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.openmrs.module.interop.utils.ClassUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public abstract class BaseObserver {
+	
+	@Autowired
+	@Qualifier("fhirR4")
+	private FhirContext fhirContext;
 	
 	@Setter
 	@Getter
@@ -44,24 +50,60 @@ public abstract class BaseObserver {
 	 * @param message the emitted event message to be processed.
 	 * @return UUID of the OpenMRS Object
 	 */
-	protected Optional<String> processMessage(Message message) {
+	protected Optional<EventMetadata> processMessage(Message message) {
+		EventMetadata metadata = new EventMetadata();
 		if (message instanceof MapMessage) {
 			MapMessage mapMessage = (MapMessage) message;
-			String uuid;
 			try {
-				uuid = mapMessage.getString("uuid");
-				log.debug("Handling patient {}", uuid);
+				String uuid = mapMessage.getString("uuid");
+				metadata.addProperty("uuid", uuid);
+				
+				//retrieve destination message then determine the action
+				String destinationMessage = mapMessage.getString("destination");
+				determineAction(Optional.ofNullable(destinationMessage)).ifPresent(action -> {
+					metadata.addProperty("action", action);
+				});
 			}
 			catch (JMSException e) {
-				log.error("Exception caught while trying to get patient uuid for event", e);
-				return Optional.empty();
+				log.error("Exception caught while trying to get patient uuid or Destination message for event", e);
 			}
-			return Optional.of(uuid);
 		}
-		return Optional.empty();
+		return Optional.of(metadata);
 	}
 	
-	public void publish(@NotNull IAnyResource resource, @Nullable IParser parser) {
+	/**
+	 * Determines the database operation/activity performed
+	 * 
+	 * @param destinationMessage The destination message
+	 * @return {@link Event.Action} performed
+	 */
+	protected Optional<Event.Action> determineAction(@NotNull Optional<String> destinationMessage) {
+		// destination = topic://UPDATED:org.openmrs.Patient
+		String action = "";
+		if (destinationMessage.isPresent()) {
+			action = destinationMessage.get().split(":(?://)?")[1];
+		}
+		switch (action) {
+			case "CREATED":
+				return Optional.of(Event.Action.CREATED);
+			case "UPDATED":
+				return Optional.of(Event.Action.UPDATED);
+			case "VOIDED":
+				return Optional.of(Event.Action.VOIDED);
+			case "UNVOIDED":
+				return Optional.of(Event.Action.UNVOIDED);
+			case "RETIRED":
+				return Optional.of(Event.Action.RETIRED);
+			case "UNRETIRED":
+				return Optional.of(Event.Action.UNRETIRED);
+			case "PURGED":
+				return Optional.of(Event.Action.PURGED);
+			default:
+				return Optional.empty();
+		}
+	}
+	
+	public void publish(@NotNull IAnyResource resource) {
 		this.getPublishers().forEach(publisher -> {
 			Publisher newInstancePublisher;
 			try {
@@ -74,34 +116,12 @@ public abstract class BaseObserver {
 			// Publish to enabled connectors
 			if (newInstancePublisher.isEnabled()) {
 				log.info("Publishing resource with ID {} to {}", resource.getId(), publisher.getSimpleName());
-				newInstancePublisher.publish(resource, parser);
+				newInstancePublisher.publish(fhirContext, resource);
 			}
 		});
 	}
 	
 	public Set<Class<? extends Publisher>> getPublishers() {
 		return ClassUtils.getPublishers();
-	}
-	
-	public Publisher getPublisher() {
-		Class<?> publisherClass;
-		try {
-			publisherClass = Context.loadClass(getPublisherClassName());
-		}
-		catch (ClassNotFoundException e) {
-			log.error("Failed to load class {}", getPublisherClassName(), e);
-			throw new APIException("Failed to load publisher", new Object[] { getPublisherClassName() }, e);
-		}
-		
-		try {
-			return (Publisher) publisherClass.getDeclaredConstructor().newInstance();
-		}
-		catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-			throw new APIException("Failed to load publisher", new Object[] { getPublisherClassName() }, e);
-		}
-	}
-	
-	private String getPublisherClassName() {
-		return Context.getAdministrationService().getGlobalProperty(InteropConstant.PUBLISHER_CLASS_NAME, "");
 	}
 }

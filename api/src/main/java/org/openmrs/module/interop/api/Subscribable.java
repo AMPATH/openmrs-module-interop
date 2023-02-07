@@ -9,12 +9,11 @@
  */
 package org.openmrs.module.interop.api;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import java.util.List;
 import java.util.Set;
 
-import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.openmrs.Auditable;
 import org.openmrs.OpenmrsObject;
@@ -23,21 +22,19 @@ import org.openmrs.event.EventListener;
 import org.openmrs.module.DaemonToken;
 
 /**
- * A wrapper interface for all DHP events
+ * A wrapper interface for all observers
  */
 public interface Subscribable<E extends OpenmrsObject & Auditable> extends EventListener {
 	
 	Class<?> clazz();
 	
-	Event.Action action();
+	List<Event.Action> actions();
 	
 	void setDaemonToken(@NotNull DaemonToken daemonToken);
 	
 	DaemonToken getDaemonToken();
 	
-	Publisher getPublisher();
-	
 	Set<Class<? extends Publisher>> getPublishers();
 	
-	void publish(@NotNull IAnyResource resource, @Nullable IParser parser);
+	void publish(@NotNull IAnyResource resource);
 }
