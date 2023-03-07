@@ -46,7 +46,7 @@ public abstract class BaseObserver {
 	
 	/**
 	 * Process the message and gets the UUID of the OpenMRS Object modified or created, or deleted
-	 * 
+	 *
 	 * @param message the emitted event message to be processed.
 	 * @return UUID of the OpenMRS Object
 	 */
@@ -73,7 +73,7 @@ public abstract class BaseObserver {
 	
 	/**
 	 * Determines the database operation/activity performed
-	 * 
+	 *
 	 * @param destinationMessage The destination message
 	 * @return {@link Event.Action} performed
 	 */
