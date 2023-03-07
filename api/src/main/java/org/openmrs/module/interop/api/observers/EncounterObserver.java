@@ -12,21 +12,45 @@ package org.openmrs.module.interop.api.observers;
 import javax.jms.Message;
 import javax.validation.constraints.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import ca.uhn.fhir.context.FhirContext;
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Location;
+import org.hl7.fhir.r4.model.Observation;
+import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Practitioner;
+import org.hl7.fhir.r4.model.Reference;
 import org.openmrs.Encounter;
+import org.openmrs.LocationAttribute;
+import org.openmrs.Obs;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
+import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
+import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
+import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
+import org.openmrs.module.interop.utils.FhirClientUtil;
 import org.openmrs.module.interop.utils.ObserverUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component("interop.encounterCreationObserver")
-public class EncounterObserver extends BaseObserver implements Subscribable<Encounter> {
+public class EncounterObserver extends BaseObserver implements Subscribable<org.openmrs.Encounter> {
+	
+	@Autowired
+	private EncounterTranslator<Encounter> encounterTranslator;
+	
+	@Autowired
+	private ObservationTranslator observationTranslator;
 	
 	@Override
 	public Class<?> clazz() {
@@ -45,12 +69,86 @@ public class EncounterObserver extends BaseObserver implements Subscribable<Enco
 		});
 	}
 	
-	protected void prepareEncounterMessage(@NotNull EventMetadata metadata) {
+	private void prepareEncounterMessage(@NotNull EventMetadata metadata) {
 		//Create bundle
 		Encounter encounter = Context.getEncounterService().getEncounterByUuid(metadata.getString("uuid"));
-		// Get observations & other referenced resources from encounter convert to FHIR then add to the bundle.
+		Set<Obs> obs;
 		
-		// now publish the bundle
-		// publish(bundle, context.newJsonParser());
+		org.hl7.fhir.r4.model.Encounter encounter1 = encounterTranslator.toFhirResource(encounter);
+		
+		Bundle encBundle = new Bundle();
+		encBundle.setType(Bundle.BundleType.TRANSACTION);
+		
+		List<PatientIdentifier> nUpi = encounter.getPatient().getActiveIdentifiers().stream()
+		        .filter(id -> id.getIdentifierType().getUuid().equals(InteropConstant.NATIONAL_UNIQUE_PATIENT_NUMBER_UUID))
+		        .collect(Collectors.toList());
+		List<LocationAttribute> mfl = encounter.getLocation().getActiveAttributes().stream()
+		        .filter(at -> at.getAttributeType().getUuid().equals(InteropConstant.MFL_LOCATION_ATTRIBUTE_UUID))
+		        .collect(Collectors.toList());
+		if (!nUpi.isEmpty() && !mfl.isEmpty()) {
+			Bundle subjectResource = getFhirConverterUtil().fetchPatientResource(nUpi.get(0).getIdentifier());
+			Patient subject;
+			Reference subjectReference = new Reference();
+			if (subjectResource.hasEntry()) {
+				subject = (Patient) subjectResource.getEntry().get(0).getResource();
+				encounter.getPatient().setUuid(getResourceUuid(subject.getId()));
+				subjectReference = createPatientReference(encounter.getPatient());
+				encounter1.setSubject(subjectReference);
+			}
+			Bundle facilityResource = getFhirConverterUtil().fetchLocationResource("10538");
+			Location facility;
+			if (facilityResource.hasEntry()) {
+				facility = (Location) facilityResource.getEntry().get(0).getResource();
+				encounter.getLocation().setUuid(getResourceUuid(facility.getId()));
+				encounter1.getLocationFirstRep().setLocation(createLocationReference(encounter.getLocation()));
+				
+			}
+			
+			Reference practitionerRef = createPractitionerReferenceBase((Practitioner) getFhirConverterUtil()
+			        .fetchFhirResource("Practitioner", InteropConstant.INTEROP_PROVIDER_UUID));
+			encounter1.setParticipant(new ArrayList<>());
+			encounter1.addParticipant(
+			    new org.hl7.fhir.r4.model.Encounter.EncounterParticipantComponent().setIndividual(practitionerRef));
+			
+			//Encounter
+			Bundle.BundleEntryComponent encounterEntry = new Bundle.BundleEntryComponent();
+			Bundle.BundleEntryRequestComponent ec = new Bundle.BundleEntryRequestComponent();
+			ec.setMethod(Bundle.HTTPVerb.POST);
+			ec.setUrl("Encounter");
+			encounterEntry.setRequest(ec);
+			encounterEntry.setResource(encounter1);
+			encBundle.addEntry(encounterEntry);
+			
+			//Observations
+			obs = encounter.getObs();
+			for (Obs obj : obs) {
+				Observation fhirObs = observationTranslator.toFhirResource(obj);
+				fhirObs.setSubject(subjectReference);
+				Bundle.BundleEntryComponent obsEntry = new Bundle.BundleEntryComponent();
+				Bundle.BundleEntryRequestComponent obsC = new Bundle.BundleEntryRequestComponent();
+				obsC.setMethod(Bundle.HTTPVerb.POST);
+				obsC.setUrl("Observation");
+				obsEntry.setRequest(obsC);
+				obsEntry.setResource(fhirObs);
+				encBundle.addEntry(obsEntry);
+			}
+			publish(encBundle);
+		} else {
+			log.error("ONE OF THE REFERENCES WAS NULL");
+		}
+	}
+	
+	public String getResourceUuid(String resourceUrl) {
+		String[] sepUrl = resourceUrl.split("/");
+		return sepUrl[sepUrl.length - 3];
+	}
+	
+	private FhirClientUtil getFhirConverterUtil() {
+		FhirContext fhirContext = FhirContext.forR4();
+		String username = "";
+		String password = "";
+		String serverUrl = "";
+		
+		return new FhirClientUtil(serverUrl, username, password, fhirContext);
 	}
 }
