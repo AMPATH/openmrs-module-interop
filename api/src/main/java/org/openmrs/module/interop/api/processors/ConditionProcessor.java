@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop.api.brokers;
+package org.openmrs.module.interop.api.processors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,16 +19,18 @@ import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.interop.InteropConstant;
-import org.openmrs.module.interop.api.InteropBroker;
-import org.openmrs.module.interop.api.brokers.translators.ConditionObsTranslator;
+import org.openmrs.module.interop.api.InteropProcessor;
+import org.openmrs.module.interop.api.processors.translators.ConditionObsTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component("interop.conditionBroker")
-public class ConditionBroker implements InteropBroker {
+public class ConditionProcessor implements InteropProcessor<Encounter> {
 	
 	@Autowired
+	@Qualifier("interop.conditions")
 	private ConditionObsTranslator conditionObsTranslator;
 	
 	@Override
@@ -47,26 +49,24 @@ public class ConditionBroker implements InteropBroker {
 	}
 	
 	@Override
-	public List<Condition> processEncounter(Encounter encounter) {
+	public List<String> forms() {
+		return null;
+	}
+	
+	@Override
+	public List<Condition> process(Encounter encounter) {
 		List<Obs> allObs = new ArrayList<>(encounter.getAllObs());
 		
 		List<Obs> conditionsObs = new ArrayList<>();
-		log.error("size:: {}", allObs.size());
-		if (!allObs.isEmpty()) {
-			allObs.forEach((obs -> {
-				if (questions().contains(obs.getConcept().getUuid())) {
+		if (validateEncounterType(encounter)) {
+			allObs.forEach(obs -> {
+				if (validateConceptQuestions(obs)) {
 					conditionsObs.add(obs);
 				}
-			}));
+			});
 		}
 		
-		//		if (validateEncounterType(encounter)) {
-		//
-		//		}
-		
 		List<Condition> conditions = new ArrayList<>();
-		log.error("Questions:: {}", questions());
-		log.error("conditions Obs:: {}", conditionsObs);
 		if (!conditionsObs.isEmpty()) {
 			conditionsObs.forEach(obs -> conditions.add(conditionObsTranslator.toFhirResource(obs)));
 		}
@@ -76,6 +76,10 @@ public class ConditionBroker implements InteropBroker {
 	
 	private boolean validateEncounterType(Encounter encounter) {
 		return encounterTypes().contains(encounter.getEncounterType().getUuid());
+	}
+	
+	private boolean validateConceptQuestions(Obs conceptObs) {
+		return questions().contains(conceptObs.getConcept().getUuid());
 	}
 	
 }

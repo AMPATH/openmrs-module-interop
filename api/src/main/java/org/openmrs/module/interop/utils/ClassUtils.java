@@ -11,7 +11,7 @@ package org.openmrs.module.interop.utils;
 
 import java.util.Set;
 
-import org.openmrs.module.interop.api.InteropBroker;
+import org.openmrs.module.interop.api.InteropProcessor;
 import org.openmrs.module.interop.api.Publisher;
 import org.reflections.Reflections;
 
@@ -24,8 +24,8 @@ public class ClassUtils {
 		return reflections.getSubTypesOf(Publisher.class);
 	}
 	
-	public static Set<Class<? extends InteropBroker>> getInteropBrokers() {
+	public static Set<Class<? extends InteropProcessor>> getInteropBrokers() {
 		Reflections reflections = new Reflections("org.openmrs.module.interop");
-		return reflections.getSubTypesOf(InteropBroker.class);
+		return reflections.getSubTypesOf(InteropProcessor.class);
 	}
 }

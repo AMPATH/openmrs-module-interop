@@ -103,5 +103,21 @@
 		<description>Encounter types enabled</description>
 		<defaultValue></defaultValue>
 	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.mflcode.locationAttributeTypeUuid</property>
+		<description>Facility MFL code location attribute type UUID</description>
+		<defaultValue>8a845a89-6aa5-4111-81d3-0af31c45c002</defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.nupi.patientIdentifierTypeUuid</property>
+		<description>NUPI Patient identifier type UUID</description>
+		<defaultValue>f85081e2-b4be-4e48-b3a4-7994b69bb101</defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.practitionerAttributeTypeUuid</property>
+		<description>Practitioner UUID</description>
+		<defaultValue>186bbf06787-268338a2-1e78-4b18-93cc-22f240d6fc37</defaultValue>
+	</globalProperty>
 	
 </module>

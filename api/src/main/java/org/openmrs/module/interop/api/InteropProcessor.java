@@ -9,19 +9,21 @@
  */
 package org.openmrs.module.interop.api;
 
-import javax.validation.constraints.NotNull;
+import org.hl7.fhir.instance.model.api.IAnyResource;
+import org.openmrs.Auditable;
+import org.openmrs.OpenmrsObject;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
-import org.hl7.fhir.r4.model.Condition;
-import org.openmrs.Encounter;
-
-public interface InteropBroker {
+public interface InteropProcessor<W extends OpenmrsObject & Auditable> {
 	
 	List<String> encounterTypes();
 	
 	List<String> questions();
 	
-	List<Condition> processEncounter(@NotNull Encounter encounter);
+	List<String> forms();
+	
+	List<? extends IAnyResource> process(@NotNull W openmrsObject);
 	
 }
