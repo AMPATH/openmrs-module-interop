@@ -91,5 +91,17 @@
 		<description>OpenHIM base URL suffix e.g /fhir/v4 </description>
 		<defaultValue>/fhir/v4</defaultValue>
 	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.conditions</property>
+		<description>coma separated list of conditions(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.encounterTypes.enabled</property>
+		<description>Encounter types enabled</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
 	
 </module>

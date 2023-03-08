@@ -20,4 +20,9 @@ public class InteropConstant {
 	public static final String MFL_LOCATION_ATTRIBUTE_UUID = "8a845a89-6aa5-4111-81d3-0af31c45c002";
 	
 	public static final String INTEROP_PROVIDER_UUID = "186bbf06787-268338a2-1e78-4b18-93cc-22f240d6fc37";
+	
+	public static String CONDITIONS_CONCEPT_UUID = "interop.conditions";
+	
+	public static String CONDITION_BROKER_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.enabled";
+	
 }

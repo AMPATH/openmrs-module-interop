@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 public abstract class BaseObserver {
 	
 	@Autowired
+	@Getter
 	@Qualifier("fhirR4")
 	private FhirContext fhirContext;
 	
@@ -63,6 +64,8 @@ public abstract class BaseObserver {
 				determineAction(Optional.ofNullable(destinationMessage)).ifPresent(action -> {
 					metadata.addProperty("action", action);
 				});
+				
+				log.error("metadata {}", metadata);
 			}
 			catch (JMSException e) {
 				log.error("Exception caught while trying to get patient uuid or Destination message for event", e);

@@ -14,6 +14,9 @@ import javax.jms.Message;
 import javax.validation.constraints.NotNull;
 
 import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +34,8 @@ import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Condition;
 import org.openmrs.Encounter;
 import org.openmrs.LocationAttribute;
 import org.openmrs.Obs;
@@ -45,6 +50,10 @@ import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.openmrs.module.interop.utils.ObserverUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.openmrs.module.interop.api.InteropBroker;
+import org.openmrs.module.interop.api.Subscribable;
+import org.openmrs.module.interop.api.metadata.EventMetadata;
+import org.openmrs.module.interop.utils.ClassUtils;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -227,5 +236,22 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		}
 		
 		return reference;
+	}
+	
+	private void processThroughBrokers(@NotNull Encounter encounter, Bundle bundle) {
+		
+	}
+	
+	private Bundle.BundleEntryComponent getConditionBundleComponent(Condition condition) {
+		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
+		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
+		bundleEntryRequestComponent.setUrl("Condition");
+		Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+		bundleEntryComponent.setRequest(bundleEntryRequestComponent);
+		bundleEntryComponent.setResource(condition);
+		
+		log.error("Conditions component: {}", bundleEntryComponent);
+		
+		return bundleEntryComponent;
 	}
 }
