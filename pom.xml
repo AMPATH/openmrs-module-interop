@@ -108,6 +108,7 @@
                         <source>8</source>
                         <target>8</target>
                     </configuration>
+                    <version>3.8.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.commonjava.maven.plugins</groupId>
