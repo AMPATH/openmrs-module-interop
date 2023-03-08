@@ -57,6 +57,6 @@ public class PatientObserver extends BaseObserver implements Subscribable<Patien
 	
 	@Override
 	public List<Event.Action> actions() {
-		return ObserverUtils.voidableEntityActions();
+		return ObserverUtils.defaultActions();
 	}
 }
