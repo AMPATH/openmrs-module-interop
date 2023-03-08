@@ -150,6 +150,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		} else {
 			log.error("ONE OF THE REFERENCES WAS NULL");
 		}
+
+		this.processBrokers(encounter);
 	}
 	
 	public String getResourceUuid(String resourceUrl) {
@@ -253,5 +255,31 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		log.error("Conditions component: {}", bundleEntryComponent);
 		
 		return bundleEntryComponent;
+	}
+
+	private void processBrokers(@Nonnull Encounter encounter) {
+		log.error("encounter {}", encounter);
+		Bundle bundle = new Bundle();
+		this.processThroughBrokers(encounter, bundle);
+
+		List<Class<? extends InteropBroker>> brokers = new ArrayList<>(ClassUtils.getInteropBrokers());
+		log.error("Num of brokers :: {}", brokers.size());
+		log.error("Brokers :: {}", brokers);
+		brokers.forEach(broker -> {
+			InteropBroker newInstanceBroker;
+			try {
+				newInstanceBroker = broker.getDeclaredConstructor().newInstance();
+			}
+			catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				log.error("Unable to instantiate {} broker class", broker.getSimpleName());
+				throw new RuntimeException(e);
+			}
+			// Publish to enabled connectors
+			List<Condition> conditions = newInstanceBroker.processEncounter(encounter);
+			log.error("Conditions {}", conditions);
+			conditions.forEach(condition -> bundle.addEntry(getConditionBundleComponent(condition)));
+			log.error("++++++++");
+			System.out.println("Resources:: " + getFhirContext().newJsonParser().encodeResourceToString(bundle));
+		});
 	}
 }
