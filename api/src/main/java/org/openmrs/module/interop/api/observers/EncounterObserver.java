@@ -64,7 +64,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	
 	@Override
 	public List<Event.Action> actions() {
-		return ObserverUtils.voidableEntityActions();
+		return ObserverUtils.defaultActions();
 	}
 	
 	@Override

@@ -18,18 +18,18 @@ import org.openmrs.event.Event;
 public class ObserverUtils {
 	
 	public static List<Event.Action> defaultActions() {
-		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED, Event.Action.PURGED);
+		return Arrays.asList(Event.Action.UPDATED, Event.Action.CREATED);
 	}
 	
 	public static List<Event.Action> voidableEntityActions() {
 		List<Event.Action> actions = new ArrayList<>(defaultActions());
-		actions.addAll(Arrays.asList(Event.Action.VOIDED, Event.Action.UNVOIDED));
+		actions.addAll(Arrays.asList(Event.Action.VOIDED, Event.Action.UNVOIDED, Event.Action.PURGED));
 		return actions;
 	}
 	
 	public static List<Event.Action> retirableEntityActions() {
 		List<Event.Action> actions = new ArrayList<>(defaultActions());
-		actions.addAll(Arrays.asList(Event.Action.RETIRED, Event.Action.UNRETIRED));
+		actions.addAll(Arrays.asList(Event.Action.RETIRED, Event.Action.UNRETIRED, Event.Action.PURGED));
 		return actions;
 	}
 	
