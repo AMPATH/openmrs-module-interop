@@ -104,7 +104,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.commonjava.maven.plugins</groupId>
@@ -186,7 +185,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!--<plugin>
                     <groupId>net.revelc.code</groupId>
                     <artifactId>impsort-maven-plugin</artifactId>
                     <version>1.8.0</version>
@@ -201,7 +200,7 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>
