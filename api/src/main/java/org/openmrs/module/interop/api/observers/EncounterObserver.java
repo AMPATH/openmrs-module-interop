@@ -9,18 +9,6 @@
  */
 package org.openmrs.module.interop.api.observers;
 
-import javax.annotation.Nonnull;
-import javax.jms.Message;
-import javax.validation.constraints.NotNull;
-
-import java.util.ArrayList;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IClientInterceptor;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
@@ -28,14 +16,13 @@ import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.Location;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Condition;
 import org.openmrs.Encounter;
 import org.openmrs.LocationAttribute;
 import org.openmrs.Obs;
@@ -46,15 +33,22 @@ import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
 import org.openmrs.module.interop.InteropConstant;
-import org.openmrs.module.interop.api.Subscribable;
-import org.openmrs.module.interop.api.metadata.EventMetadata;
-import org.openmrs.module.interop.utils.ObserverUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.openmrs.module.interop.api.InteropBroker;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.openmrs.module.interop.utils.ClassUtils;
+import org.openmrs.module.interop.utils.ObserverUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import javax.jms.Message;
+import javax.validation.constraints.NotNull;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("interop.encounterCreationObserver")
@@ -87,6 +81,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		//Create bundle
 		Encounter encounter = Context.getEncounterService().getEncounterByUuid(metadata.getString("uuid"));
 		Set<Obs> obs;
+		
+		this.processBrokers(encounter);
 		
 		org.hl7.fhir.r4.model.Encounter encounter1 = encounterTranslator.toFhirResource(encounter);
 		
@@ -150,8 +146,6 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		} else {
 			log.error("ONE OF THE REFERENCES WAS NULL");
 		}
-		
-		this.processBrokers(encounter);
 	}
 	
 	public String getResourceUuid(String resourceUrl) {
