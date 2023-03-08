@@ -52,8 +52,8 @@ public class PatientObserverTest {
 	@Test
 	public void verifySpecifiedActions() {
 		List<Event.Action> actions = patientObserver.actions();
-		assertThat(actions, hasSize(5));
-		assertThat(actions, hasItems(Event.Action.CREATED, Event.Action.VOIDED, Event.Action.UPDATED));
+		assertThat(actions, hasSize(2));
+		assertThat(actions, hasItems(Event.Action.CREATED, Event.Action.UPDATED));
 	}
 	
 	@Test

@@ -150,7 +150,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		} else {
 			log.error("ONE OF THE REFERENCES WAS NULL");
 		}
-
+		
 		this.processBrokers(encounter);
 	}
 	
@@ -256,12 +256,12 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		
 		return bundleEntryComponent;
 	}
-
+	
 	private void processBrokers(@Nonnull Encounter encounter) {
 		log.error("encounter {}", encounter);
 		Bundle bundle = new Bundle();
 		this.processThroughBrokers(encounter, bundle);
-
+		
 		List<Class<? extends InteropBroker>> brokers = new ArrayList<>(ClassUtils.getInteropBrokers());
 		log.error("Num of brokers :: {}", brokers.size());
 		log.error("Brokers :: {}", brokers);
