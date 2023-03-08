@@ -33,10 +33,9 @@ import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
 import org.openmrs.module.interop.InteropConstant;
-import org.openmrs.module.interop.api.InteropBroker;
 import org.openmrs.module.interop.api.Subscribable;
+import org.openmrs.module.interop.api.processors.ConditionProcessor;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
-import org.openmrs.module.interop.utils.ClassUtils;
 import org.openmrs.module.interop.utils.ObserverUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,7 +43,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.jms.Message;
 import javax.validation.constraints.NotNull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +57,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	
 	@Autowired
 	private ObservationTranslator observationTranslator;
+	
+	@Autowired
+	private ConditionProcessor conditionProcessor;
 	
 	@Override
 	public Class<?> clazz() {
@@ -80,72 +81,77 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	private void prepareEncounterMessage(@NotNull EventMetadata metadata) {
 		//Create bundle
 		Encounter encounter = Context.getEncounterService().getEncounterByUuid(metadata.getString("uuid"));
+		Bundle preparedBundle = new Bundle();
+		
 		Set<Obs> obs;
 		
-		this.processBrokers(encounter);
+		this.processBrokers(encounter, preparedBundle);
 		
-		org.hl7.fhir.r4.model.Encounter encounter1 = encounterTranslator.toFhirResource(encounter);
+		log.error("Bundled resources :: {}",
+		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
 		
-		Bundle encBundle = new Bundle();
-		encBundle.setType(Bundle.BundleType.TRANSACTION);
-		
-		List<PatientIdentifier> nUpi = encounter.getPatient().getActiveIdentifiers().stream()
-		        .filter(id -> id.getIdentifierType().getUuid().equals(InteropConstant.NATIONAL_UNIQUE_PATIENT_NUMBER_UUID))
-		        .collect(Collectors.toList());
-		List<LocationAttribute> mfl = encounter.getLocation().getActiveAttributes().stream()
-		        .filter(at -> at.getAttributeType().getUuid().equals(InteropConstant.MFL_LOCATION_ATTRIBUTE_UUID))
-		        .collect(Collectors.toList());
-		if (!nUpi.isEmpty() && !mfl.isEmpty()) {
-			Bundle subjectResource = fetchPatientResource(nUpi.get(0).getIdentifier());
-			Patient subject;
-			Reference subjectReference = new Reference();
-			if (subjectResource.hasEntry()) {
-				subject = (Patient) subjectResource.getEntry().get(0).getResource();
-				encounter.getPatient().setUuid(getResourceUuid(subject.getId()));
-				subjectReference = createPatientReference(subject);
-				encounter1.setSubject(subjectReference);
-			}
-			Bundle facilityResource = fetchLocationResource("29593");
-			Location facility;
-			if (facilityResource.hasEntry()) {
-				facility = (Location) facilityResource.getEntry().get(0).getResource();
-				encounter.getLocation().setUuid(getResourceUuid(facility.getId()));
-				encounter1.getLocationFirstRep().setLocation(createLocationReference(facility));
-				
-			}
-			
-			Reference practitionerRef = createPractitionerReferenceBase(
-			    (Practitioner) fetchFhirResource("Practitioner", InteropConstant.INTEROP_PROVIDER_UUID));
-			encounter1.setParticipant(new ArrayList<>());
-			encounter1.addParticipant(
-			    new org.hl7.fhir.r4.model.Encounter.EncounterParticipantComponent().setIndividual(practitionerRef));
-			
-			//Encounter
-			Bundle.BundleEntryComponent encounterEntry = new Bundle.BundleEntryComponent();
-			Bundle.BundleEntryRequestComponent ec = new Bundle.BundleEntryRequestComponent();
-			ec.setMethod(Bundle.HTTPVerb.POST);
-			ec.setUrl("Encounter");
-			encounterEntry.setRequest(ec);
-			encounterEntry.setResource(encounter1);
-			encBundle.addEntry(encounterEntry);
-			
-			//Observations
-			obs = encounter.getObs();
-			for (Obs obj : obs) {
-				Observation fhirObs = observationTranslator.toFhirResource(obj);
-				fhirObs.setSubject(subjectReference);
-				Bundle.BundleEntryComponent obsEntry = new Bundle.BundleEntryComponent();
-				Bundle.BundleEntryRequestComponent obsC = new Bundle.BundleEntryRequestComponent();
-				obsC.setMethod(Bundle.HTTPVerb.POST);
-				obsC.setUrl("Observation");
-				obsEntry.setRequest(obsC);
-				obsEntry.setResource(fhirObs);
-				encBundle.addEntry(obsEntry);
-			}
-			publish(encBundle);
-		} else {
-			log.error("ONE OF THE REFERENCES WAS NULL");
-		}
+		//		org.hl7.fhir.r4.model.Encounter fhirEncounterResource = encounterTranslator.toFhirResource(encounter);
+		//		preparedBundle.setType(Bundle.BundleType.TRANSACTION);
+		//
+		//		List<PatientIdentifier> nUpi = encounter.getPatient().getActiveIdentifiers().stream()
+		//		        .filter(id -> id.getIdentifierType().getUuid().equals(ObserverUtils.getNUPIIdentifierType().getUuid()))
+		//		        .collect(Collectors.toList());
+		//		List<LocationAttribute> mfl = encounter.getLocation().getActiveAttributes().stream()
+		//		        .filter(at -> at.getAttributeType().getUuid().equals(ObserverUtils.getMFLCODELocationAttributeType().getUuid()))
+		//		        .collect(Collectors.toList());
+		//
+		//		if (!nUpi.isEmpty() && !mfl.isEmpty()) {
+		////			Bundle subjectResource = fetchPatientResource(nUpi.get(0).getIdentifier());
+		////			Patient subject;
+		////			Reference subjectReference = new Reference();
+		////			if (subjectResource.hasEntry()) {
+		////				subject = (Patient) subjectResource.getEntry().get(0).getResource();
+		////				encounter.getPatient().setUuid(getResourceUuid(subject.getId()));
+		////				subjectReference = createPatientReference(subject);
+		////				encounter1.setSubject(subjectReference);
+		////			}
+		////			Bundle facilityResource = fetchLocationResource("29593");
+		////			Location facility;
+		////			if (facilityResource.hasEntry()) {
+		////				facility = (Location) facilityResource.getEntry().get(0).getResource();
+		////				encounter.getLocation().setUuid(getResourceUuid(facility.getId()));
+		////				encounter1.getLocationFirstRep().setLocation(createLocationReference(facility));
+		////
+		////			}
+		//
+		//			Reference practitionerRef = createPractitionerReferenceBase(
+		//			    (Practitioner) fetchFhirResource("Practitioner", InteropConstant.INTEROP_PROVIDER_UUID));
+		//			fhirEncounterResource.setParticipant(new ArrayList<>());
+		//			fhirEncounterResource.addParticipant(
+		//			    new org.hl7.fhir.r4.model.Encounter.EncounterParticipantComponent().setIndividual(practitionerRef));
+		//
+		//			//Encounter
+		//			Bundle.BundleEntryComponent encounterEntry = new Bundle.BundleEntryComponent();
+		//			Bundle.BundleEntryRequestComponent ec = new Bundle.BundleEntryRequestComponent();
+		//			ec.setMethod(Bundle.HTTPVerb.POST);
+		//			ec.setUrl("Encounter");
+		//			encounterEntry.setRequest(ec);
+		//			encounterEntry.setResource(fhirEncounterResource);
+		//			preparedBundle.addEntry(encounterEntry);
+		//
+		//			//Observations
+		//			obs = encounter.getObs();
+		//			for (Obs obj : obs) {
+		//				Observation fhirObs = observationTranslator.toFhirResource(obj);
+		//				fhirObs.setSubject(subjectReference);
+		//				Bundle.BundleEntryComponent obsEntry = new Bundle.BundleEntryComponent();
+		//				Bundle.BundleEntryRequestComponent obsC = new Bundle.BundleEntryRequestComponent();
+		//				obsC.setMethod(Bundle.HTTPVerb.POST);
+		//				obsC.setUrl("Observation");
+		//				obsEntry.setRequest(obsC);
+		//				obsEntry.setResource(fhirObs);
+		//				preparedBundle.addEntry(obsEntry);
+		//			}
+		//			//publish(preparedBundle);
+		//		} else {
+		//			log.error("ONE OF THE REFERENCES WAS NULL");
+		//		}
+		//publish(preparedBundle);
 	}
 	
 	public String getResourceUuid(String resourceUrl) {
@@ -234,10 +240,6 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		return reference;
 	}
 	
-	private void processThroughBrokers(@NotNull Encounter encounter, Bundle bundle) {
-		
-	}
-	
 	private Bundle.BundleEntryComponent getConditionBundleComponent(Condition condition) {
 		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
 		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
@@ -245,35 +247,11 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
 		bundleEntryComponent.setRequest(bundleEntryRequestComponent);
 		bundleEntryComponent.setResource(condition);
-		
-		log.error("Conditions component: {}", bundleEntryComponent);
-		
 		return bundleEntryComponent;
 	}
 	
-	private void processBrokers(@Nonnull Encounter encounter) {
-		log.error("encounter {}", encounter);
-		Bundle bundle = new Bundle();
-		this.processThroughBrokers(encounter, bundle);
-		
-		List<Class<? extends InteropBroker>> brokers = new ArrayList<>(ClassUtils.getInteropBrokers());
-		log.error("Num of brokers :: {}", brokers.size());
-		log.error("Brokers :: {}", brokers);
-		brokers.forEach(broker -> {
-			InteropBroker newInstanceBroker;
-			try {
-				newInstanceBroker = broker.getDeclaredConstructor().newInstance();
-			}
-			catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-				log.error("Unable to instantiate {} broker class", broker.getSimpleName());
-				throw new RuntimeException(e);
-			}
-			// Publish to enabled connectors
-			List<Condition> conditions = newInstanceBroker.processEncounter(encounter);
-			log.error("Conditions {}", conditions);
-			conditions.forEach(condition -> bundle.addEntry(getConditionBundleComponent(condition)));
-			log.error("++++++++");
-			System.out.println("Resources:: " + getFhirContext().newJsonParser().encodeResourceToString(bundle));
-		});
+	private void processBrokers(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
+		List<Condition> conditions = conditionProcessor.process(encounter);
+		conditions.forEach(condition -> bundle.addEntry(getConditionBundleComponent(condition)));
 	}
 }

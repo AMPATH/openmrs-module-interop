@@ -7,29 +7,29 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.interop.api.brokers.translators.impl;
+package org.openmrs.module.interop.api.processors.translators.impl;
 
-import static org.apache.commons.lang3.Validate.notNull;
-import static org.openmrs.module.fhir2.api.translators.impl.FhirTranslatorUtils.getLastUpdated;
-
-import javax.annotation.Nonnull;
-
-import org.hibernate.proxy.HibernateProxy;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.DateTimeType;
+import org.openmrs.Auditable;
 import org.openmrs.Obs;
+import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
 import org.openmrs.Person;
 import org.openmrs.User;
-import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
-import org.openmrs.module.interop.api.brokers.translators.ConditionObsTranslator;
+import org.openmrs.module.interop.api.processors.translators.ConditionObsTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+import javax.annotation.Nonnull;
+import java.util.Date;
+
+import static org.apache.commons.lang3.Validate.notNull;
+
+@Component("interop.conditions")
 public class ConditionObsTranslatorImpl implements ConditionObsTranslator {
 	
 	@Autowired
@@ -49,15 +49,7 @@ public class ConditionObsTranslatorImpl implements ConditionObsTranslator {
 		fhirCondition.setId(obs.getUuid());
 		
 		Person obsPerson = obs.getPerson();
-		if (obsPerson != null) {
-			if (obsPerson instanceof HibernateProxy) {
-				obsPerson = HibernateUtil.getRealObjectFromProxy(obsPerson);
-			}
-			
-			if (obsPerson instanceof Patient) {
-				fhirCondition.setSubject(patientReferenceTranslator.toFhirResource((Patient) obsPerson));
-			}
-		}
+		fhirCondition.setSubject(patientReferenceTranslator.toFhirResource((Patient) obsPerson));
 		
 		if (obs.getValueCoded() != null) {
 			fhirCondition.setCode(conceptTranslator.toFhirResource(obs.getValueCoded()));
@@ -67,8 +59,17 @@ public class ConditionObsTranslatorImpl implements ConditionObsTranslator {
 		fhirCondition.setRecorder(practitionerReferenceTranslator.toFhirResource(obs.getCreator()));
 		fhirCondition.setRecordedDate(obs.getDateCreated());
 		
-		fhirCondition.getMeta().setLastUpdated(getLastUpdated(obs));
+		fhirCondition.getMeta().setLastUpdated(this.getLastUpdated(obs));
 		
 		return fhirCondition;
+	}
+	
+	public Date getLastUpdated(OpenmrsObject object) {
+		if (object instanceof Auditable) {
+			Auditable auditable = (Auditable) object;
+			return auditable.getDateChanged() != null ? auditable.getDateChanged() : auditable.getDateCreated();
+		} else {
+			return null;
+		}
 	}
 }
