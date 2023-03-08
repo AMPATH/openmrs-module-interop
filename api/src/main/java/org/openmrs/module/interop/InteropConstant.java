@@ -19,10 +19,12 @@ public class InteropConstant {
 	
 	public static final String MFL_LOCATION_ATTRIBUTE_UUID = "interop.mflcode.locationAttributeTypeUuid";
 	
-	public static final String INTEROP_PROVIDER_UUID = "interop.practitionerAttributeTypeUuid";
+	public static final String INTEROP_PROVIDER_ATTRIBUTE_TYPE_UUID = "interop.practitionerAttributeTypeUuid";
 	
 	public static String CONDITIONS_CONCEPT_UUID = "interop.conditions";
 	
 	public static String CONDITION_BROKER_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.enabled";
+	
+	public static String SYSTEM_URL = "https://usamru.nascop.org/fhir-server/api/v4/";
 	
 }

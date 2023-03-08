@@ -9,16 +9,16 @@
  */
 package org.openmrs.module.interop.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.hl7.fhir.r4.model.Reference;
 import org.openmrs.LocationAttributeType;
 import org.openmrs.PatientIdentifierType;
+import org.openmrs.ProviderAttributeType;
 import org.openmrs.api.context.Context;
 import org.openmrs.event.Event;
 import org.openmrs.module.interop.InteropConstant;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ObserverUtils {
 	
@@ -48,6 +48,12 @@ public class ObserverUtils {
 		String MFLCODELocationAttributeType = Context.getAdministrationService()
 		        .getGlobalPropertyValue(InteropConstant.MFL_LOCATION_ATTRIBUTE_UUID, "");
 		return Context.getLocationService().getLocationAttributeTypeByUuid(MFLCODELocationAttributeType);
+	}
+	
+	public static ProviderAttributeType getProviderAttributeType() {
+		String providerAttributeType = Context.getAdministrationService()
+		        .getGlobalPropertyValue(InteropConstant.INTEROP_PROVIDER_ATTRIBUTE_TYPE_UUID, "");
+		return Context.getProviderService().getProviderAttributeTypeByUuid(providerAttributeType);
 	}
 	
 }
