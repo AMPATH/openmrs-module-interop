@@ -119,5 +119,16 @@
 		<description>Practitioner UUID</description>
 		<defaultValue>186bbf06787-268338a2-1e78-4b18-93cc-22f240d6fc37</defaultValue>
 	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.appointments</property>
+		<description>coma separated list of appointments(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.encounterTypes.appointments</property>
+		<description>Appointment encounter types enabled</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
 	
 </module>
