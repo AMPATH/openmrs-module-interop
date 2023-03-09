@@ -27,4 +27,8 @@ public class InteropConstant {
 	
 	public static String SYSTEM_URL = "https://usamru.nascop.org/fhir-server/api/v4/";
 	
+	public static String APPOINTMENT_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.appointments";
+	
+	public static String APPOINTMENT_CONCEPT_UUID = "interop.appointments";
+	
 }
