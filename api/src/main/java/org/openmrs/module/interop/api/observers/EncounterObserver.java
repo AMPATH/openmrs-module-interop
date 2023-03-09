@@ -10,6 +10,7 @@
 package org.openmrs.module.interop.api.observers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.r4.model.AllergyIntolerance;
 import org.hl7.fhir.r4.model.Appointment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
@@ -29,6 +30,7 @@ import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
 import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Subscribable;
+import org.openmrs.module.interop.api.processors.AllergyIntoleranceProcessor;
 import org.openmrs.module.interop.api.processors.AppointmentProcessor;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.openmrs.module.interop.api.processors.ConditionProcessor;
@@ -58,6 +60,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	
 	@Autowired
 	private AppointmentProcessor appointmentProcessor;
+	
+	@Autowired
+	private AllergyIntoleranceProcessor allergyIntoleranceProcessor;
 	
 	@Override
 	public Class<?> clazz() {
@@ -153,6 +158,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			bundle.addEntry(getAppointmentBundleComponent(appointment));
 		});
 		
+		List<AllergyIntolerance> allergyIntolerances = allergyIntoleranceProcessor.process(encounter);
+		allergyIntolerances.forEach(allergyIntolerance -> bundle.addEntry(getAllergyBundleComponent(allergyIntolerance)));
+		
 	}
 
 	private Identifier buildPatientUpiIdentifier(@NotNull Patient patient) {
@@ -201,4 +209,15 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		
 		return attributes.isEmpty() ? "" : attributes.get(0).getValue().toString();
 	}
+	
+	private Bundle.BundleEntryComponent getAllergyBundleComponent(AllergyIntolerance allergyIntolerance) {
+		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
+		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
+		bundleEntryRequestComponent.setUrl("AllergyIntolerance");
+		Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+		bundleEntryComponent.setRequest(bundleEntryRequestComponent);
+		bundleEntryComponent.setResource(allergyIntolerance);
+		return bundleEntryComponent;
+	}
+	
 }
