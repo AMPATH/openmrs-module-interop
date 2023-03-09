@@ -72,7 +72,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	@Override
 	public void onMessage(Message message) {
 		processMessage(message).ifPresent(metadata -> {
+			//formatter:off
 			Daemon.runInDaemonThread(() -> prepareEncounterMessage(metadata), getDaemonToken());
+			//formatter:on
 		});
 	}
 	
@@ -82,27 +84,24 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		Bundle preparedBundle = new Bundle();
 		
 		this.processBrokers(encounter, preparedBundle);
+
+		org.hl7.fhir.r4.model.Encounter fhirEncounter = encounterTranslator.toFhirResource(encounter);
+		fhirEncounter.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
 		
 		Bundle.BundleEntryComponent encounterBundleEntryComponent = new Bundle.BundleEntryComponent();
 		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
 		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
 		bundleEntryRequestComponent.setUrl("Encounter");
 		encounterBundleEntryComponent.setRequest(bundleEntryRequestComponent);
-		encounterBundleEntryComponent.setResource(encounterTranslator.toFhirResource(encounter));
+		encounterBundleEntryComponent.setResource(fhirEncounter);
 		preparedBundle.addEntry(encounterBundleEntryComponent);
 		
 		//Observations
 		List<Obs> encounterObservations = new ArrayList<>(encounter.getObs());
 		for (Obs obs : encounterObservations) {
 			Observation fhirObs = observationTranslator.toFhirResource(obs);
-			
-			Identifier identifier = new Identifier();
-			identifier.setSystem(InteropConstant.SYSTEM_URL);
-			identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-			identifier.setValue(getPatientNUPI(encounter.getPatient()));
-			
-			fhirObs.getSubject().setIdentifier(identifier);
-			
+			fhirObs.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+
 			Bundle.BundleEntryComponent obsBundleEntry = new Bundle.BundleEntryComponent();
 			Bundle.BundleEntryRequestComponent requestComponent = new Bundle.BundleEntryRequestComponent();
 			requestComponent.setMethod(Bundle.HTTPVerb.POST);
@@ -141,33 +140,41 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	private void processBrokers(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
 		List<Condition> conditions = conditionProcessor.process(encounter);
 		conditions.forEach(condition -> {
-			enrichConditionResourceReferences(encounter, condition);
+			condition.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+			condition.getRecorder().setIdentifier(buildProviderIdentifier(encounter));
 			bundle.addEntry(buildConditionBundleEntry(condition));
 		});
+
 		List<Appointment> appointments = appointmentProcessor.process(encounter);
-		appointments.forEach(appointment -> bundle.addEntry(getAppointmentBundleComponent(appointment)));
+		appointments.forEach(appointment -> {
+			for (Appointment.AppointmentParticipantComponent participantComponent : appointment.getParticipant()) {
+				participantComponent.getActor().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+			}
+			bundle.addEntry(getAppointmentBundleComponent(appointment));
+		});
 		
 	}
-	
-	/**
-	 * Enriches Practitioner & Subject with identifiers (NUPI & National ID)
-	 * 
-	 * @param condition
-	 */
-	private void enrichConditionResourceReferences(@NotNull Encounter encounter, @NotNull Condition condition) {
+
+	private Identifier buildPatientUpiIdentifier(@NotNull Patient patient) {
 		Identifier identifier = new Identifier();
 		identifier.setSystem(InteropConstant.SYSTEM_URL);
 		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-		identifier.setValue(getPatientNUPI(encounter.getPatient()));
-		
-		condition.getSubject().setIdentifier(identifier);
-		
-		Identifier providerIdentifier = new Identifier();
-		providerIdentifier.setSystem(InteropConstant.SYSTEM_URL);
-		providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-		providerIdentifier.setValue("<What should we use to determine Practitioners>");
-		
-		condition.getRecorder().setIdentifier(providerIdentifier);
+		identifier.setValue(getPatientNUPI(patient));
+
+		return identifier;
+	}
+
+	private Identifier buildProviderIdentifier(@NotNull Encounter encounter) {
+		Identifier identifier = new Identifier();
+		identifier.setSystem(InteropConstant.SYSTEM_URL);
+		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+
+		List<String> identifiers = getProviderUniversalIdentifiers(encounter);
+		if (!identifiers.isEmpty()) {
+			identifier.setValue(identifiers.get(0));
+		}
+
+		return identifier;
 	}
 	
 	private String getPatientNUPI(Patient patient) {
@@ -183,11 +190,11 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	private List<String> getProviderUniversalIdentifiers(Encounter encounter) {
 		List<String> practitioners = new ArrayList<>();
 		List<EncounterProvider> encounterProviders = new ArrayList<>(encounter.getActiveEncounterProviders());
-		encounterProviders.forEach(provider -> practitioners.add(getProviderUniversalIdentifier(provider.getProvider())));
+		encounterProviders.forEach(provider -> practitioners.add(providerUniversalIdentifier(provider.getProvider())));
 		return practitioners;
 	}
 	
-	private String getProviderUniversalIdentifier(Provider provider) {
+	private String providerUniversalIdentifier(Provider provider) {
 		List<ProviderAttribute> attributes = provider.getActiveAttributes().stream().filter(
 		    attribute -> attribute.getAttributeType().getUuid().equals(ObserverUtils.getProviderAttributeType().getUuid()))
 		        .collect(Collectors.toList());
