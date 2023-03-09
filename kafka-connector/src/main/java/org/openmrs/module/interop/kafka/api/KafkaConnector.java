@@ -22,6 +22,8 @@ import org.openmrs.module.interop.api.Publisher;
 import org.openmrs.module.interop.kafka.KafkaConfiguration;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Slf4j
 @Component
 public class KafkaConnector implements Publisher {
@@ -30,12 +32,11 @@ public class KafkaConnector implements Publisher {
 	public void publish(@NotNull FhirContext context, @NotNull IAnyResource resource) {
 		log.error("publish resource with ID {}", resource.getId());
 		String encodeResourceString = context.newJsonParser().encodeResourceToString(resource);
-		;
 		if (encodeResourceString == null || encodeResourceString.isEmpty()) {
 			encodeResourceString = resource.getId();
 			log.error("Resource with UUID {} isn't encoded", encodeResourceString);
 		}
-		KafkaProducer.produce(resource.fhirType(), resource.getId(), encodeResourceString);
+		KafkaProducer.produce(resource.fhirType(), UUID.randomUUID().toString(), encodeResourceString);
 	}
 	
 	@Override

@@ -153,10 +153,13 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	}
 	
 	private String getPatientNUPI(Patient patient) {
-		List<PatientIdentifier> nUpi = patient.getActiveIdentifiers().stream()
-		        .filter(id -> id.getIdentifierType().getUuid().equals(ObserverUtils.getNUPIIdentifierType().getUuid()))
-		        .collect(Collectors.toList());
-		return nUpi.isEmpty() ? "" : nUpi.get(0).getIdentifier();
+		if (ObserverUtils.getNUPIIdentifierType() != null) {
+			List<PatientIdentifier> nUpi = patient.getActiveIdentifiers().stream()
+			        .filter(id -> id.getIdentifierType().getUuid().equals(ObserverUtils.getNUPIIdentifierType().getUuid()))
+			        .collect(Collectors.toList());
+			return nUpi.isEmpty() ? "" : nUpi.get(0).getIdentifier();
+		}
+		return "";
 	}
 	
 	private List<String> getProviderUniversalIdentifiers(Encounter encounter) {
