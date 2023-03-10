@@ -126,8 +126,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			preparedBundle.addEntry(obsBundleEntry);
 		}
 		
-		log.error("Bundled resources :: {}",
-		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
+//		log.error("Bundled resources :: {}",
+//		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
 		
 		this.publish(preparedBundle);
 	}
