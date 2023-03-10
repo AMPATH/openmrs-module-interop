@@ -145,7 +145,7 @@
 	<globalProperty>
 		<property>@MODULE_ID@.system.url.configuration</property>
 		<description>System Configuration URL</description>
-		<defaultValue>https://usamru.nascop.org/fhir-server/api/v4/</defaultValue>
+		<defaultValue>https://interoperabilitylab.uonbi.ac.ke/test/fhir-server/api/v4/</defaultValue>
 	</globalProperty>
 	
 </module>
