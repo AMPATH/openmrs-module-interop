@@ -46,7 +46,7 @@ public class ObserverUtils {
 	
 	public static LocationAttributeType getMFLCODELocationAttributeType() {
 		String MFLCODELocationAttributeType = Context.getAdministrationService()
-		        .getGlobalPropertyValue(InteropConstant.MFL_LOCATION_ATTRIBUTE_UUID, "");
+		        .getGlobalPropertyValue(InteropConstant.INTEROP_MFLCODE_LOCATION_ATTRIBUTE_TYPE_UUID, "");
 		return Context.getLocationService().getLocationAttributeTypeByUuid(MFLCODELocationAttributeType);
 	}
 	
