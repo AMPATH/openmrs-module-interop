@@ -76,7 +76,7 @@ public class PatientObserver extends BaseObserver implements Subscribable<Patien
 			Identifier identifier = new Identifier();
 			//identifier.setValue();
 			identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-			identifier.setSystem(InteropConstant.SYSTEM_URL);
+			identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
 			provenance.getAgentFirstRep().getWho().setIdentifier(identifier);
 			provenceReferences.add(provenance);
 		}

@@ -36,7 +36,7 @@ public class ReferencesUtil {
 			List<LocationAttribute> mflCodeAttribute = location.getActiveAttributes().stream()
 			        .filter(loc -> loc.getAttributeType().getUuid().equals(mflCodeUuid)).collect(Collectors.toList());
 			if (!mflCodeAttribute.isEmpty()) {
-				reference.getIdentifier().setSystem(InteropConstant.SYSTEM_URL)
+				reference.getIdentifier().setSystem(ObserverUtils.getSystemUrlConfiguration())
 				        .setValue(mflCodeAttribute.get(0).getValue().toString()).setUse(Identifier.IdentifierUse.OFFICIAL);
 			}
 		}
@@ -56,7 +56,7 @@ public class ReferencesUtil {
 	
 	public static Identifier buildProviderIdentifier(@NotNull Encounter encounter) {
 		Identifier identifier = new Identifier();
-		identifier.setSystem(InteropConstant.SYSTEM_URL);
+		identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
 		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
 		List<String> identifiers = getProviderUniversalIdentifiers(encounter);
 		if (!identifiers.isEmpty()) {

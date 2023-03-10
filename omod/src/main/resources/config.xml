@@ -130,5 +130,22 @@
 		<description>Appointment encounter types enabled</description>
 		<defaultValue></defaultValue>
 	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.allergyIntolerance</property>
+		<description>coma separated list of allergy(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.encounterTypes.allergyIntolerance</property>
+		<description>Allergy encounter types enabled</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.system.url.configuration</property>
+		<description>System Configuration URL</description>
+		<defaultValue>https://interoperabilitylab.uonbi.ac.ke/test/fhir-server/api/v4/</defaultValue>
+	</globalProperty>
 	
 </module>

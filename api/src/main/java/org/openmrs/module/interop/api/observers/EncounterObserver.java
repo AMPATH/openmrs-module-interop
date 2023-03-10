@@ -126,8 +126,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			preparedBundle.addEntry(obsBundleEntry);
 		}
 		
-//		log.error("Bundled resources :: {}",
-//		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
+		//		log.error("Bundled resources :: {}",
+		//		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
 		
 		this.publish(preparedBundle);
 	}
@@ -181,7 +181,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	
 	private Identifier buildPatientUpiIdentifier(@NotNull Patient patient) {
 		Identifier identifier = new Identifier();
-		identifier.setSystem(InteropConstant.SYSTEM_URL);
+		identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
 		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
 		identifier.setValue(getPatientNUPI(patient));
 		

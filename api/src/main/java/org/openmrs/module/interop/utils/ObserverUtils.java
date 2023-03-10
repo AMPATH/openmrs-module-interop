@@ -56,4 +56,8 @@ public class ObserverUtils {
 		return Context.getProviderService().getProviderAttributeTypeByUuid(providerAttributeType);
 	}
 	
+	public static String getSystemUrlConfiguration() {
+		return Context.getAdministrationService().getGlobalPropertyValue(InteropConstant.SYSTEM_URL, "");
+	}
+	
 }
