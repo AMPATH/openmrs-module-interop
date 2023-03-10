@@ -25,7 +25,7 @@ public class InteropConstant {
 	
 	public static String CONDITION_BROKER_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.enabled";
 	
-	public static String SYSTEM_URL = "https://usamru.nascop.org/fhir-server/api/v4/";
+	public static String SYSTEM_URL = "interop.system.url.configuration";
 	
 	public static String APPOINTMENT_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.appointments";
 	

@@ -77,8 +77,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	@Override
 	public void onMessage(Message message) {
 		processMessage(message).ifPresent(metadata -> {
-			//formatter:off
-			Daemon.runInDaemonThread(() -> prepareEncounterMessage(metadata), getDaemonToken());
+		    //formatter:off
+		    Daemon.runInDaemonThread(() -> prepareEncounterMessage(metadata), getDaemonToken());
 			//formatter:on
 		});
 	}
@@ -89,7 +89,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		Bundle preparedBundle = new Bundle();
 		
 		this.processBrokers(encounter, preparedBundle);
-
+		
 		org.hl7.fhir.r4.model.Encounter fhirEncounter = encounterTranslator.toFhirResource(encounter);
 		fhirEncounter.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
 		
@@ -106,7 +106,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		for (Obs obs : encounterObservations) {
 			Observation fhirObs = observationTranslator.toFhirResource(obs);
 			fhirObs.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
-
+			
 			Bundle.BundleEntryComponent obsBundleEntry = new Bundle.BundleEntryComponent();
 			Bundle.BundleEntryRequestComponent requestComponent = new Bundle.BundleEntryRequestComponent();
 			requestComponent.setMethod(Bundle.HTTPVerb.POST);
@@ -149,7 +149,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			condition.getRecorder().setIdentifier(buildProviderIdentifier(encounter));
 			bundle.addEntry(buildConditionBundleEntry(condition));
 		});
-
+		
 		List<Appointment> appointments = appointmentProcessor.process(encounter);
 		appointments.forEach(appointment -> {
 			for (Appointment.AppointmentParticipantComponent participantComponent : appointment.getParticipant()) {
@@ -162,26 +162,26 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		allergyIntolerances.forEach(allergyIntolerance -> bundle.addEntry(getAllergyBundleComponent(allergyIntolerance)));
 		
 	}
-
+	
 	private Identifier buildPatientUpiIdentifier(@NotNull Patient patient) {
 		Identifier identifier = new Identifier();
 		identifier.setSystem(InteropConstant.SYSTEM_URL);
 		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
 		identifier.setValue(getPatientNUPI(patient));
-
+		
 		return identifier;
 	}
-
+	
 	private Identifier buildProviderIdentifier(@NotNull Encounter encounter) {
 		Identifier identifier = new Identifier();
 		identifier.setSystem(InteropConstant.SYSTEM_URL);
 		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-
+		
 		List<String> identifiers = getProviderUniversalIdentifiers(encounter);
 		if (!identifiers.isEmpty()) {
 			identifier.setValue(identifiers.get(0));
 		}
-
+		
 		return identifier;
 	}
 	
