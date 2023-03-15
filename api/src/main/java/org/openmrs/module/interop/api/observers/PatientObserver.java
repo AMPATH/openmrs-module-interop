@@ -49,7 +49,7 @@ public class PatientObserver extends BaseObserver implements Subscribable<Patien
 		org.hl7.fhir.r4.model.Patient patientResource = fhirPatientService.get(metadata.getString("uuid"));
 		if (patientResource != null) {
 			//patientResource.getContained().clear();
-			patientResource.setContained(resolvePatientProvence(patientResource.getContained()));
+			//patientResource.setContained(resolvePatientProvence(patientResource.getContained()));
 			this.publish(patientResource);
 		} else {
 			log.error("Couldn't find patient with UUID {} ", metadata.getString("uuid"));
