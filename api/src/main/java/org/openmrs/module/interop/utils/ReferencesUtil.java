@@ -20,10 +20,12 @@ import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
 import org.openmrs.Provider;
 import org.openmrs.ProviderAttribute;
-import org.openmrs.module.interop.InteropConstant;
+import org.openmrs.User;
+import org.openmrs.api.context.Context;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,18 +60,17 @@ public class ReferencesUtil {
 		Identifier identifier = new Identifier();
 		identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
 		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-		List<String> identifiers = getProviderUniversalIdentifiers(encounter);
-		if (!identifiers.isEmpty()) {
-			identifier.setValue(identifiers.get(0));
+		if (!encounter.getEncounterProviders().isEmpty()) {
+			Provider provider = encounter.getEncounterProviders().iterator().next().getProvider();
+			String providerNationalId = providerUniversalIdentifier(provider);
+			if (!providerNationalId.isEmpty()) {
+				identifier.setValue(providerNationalId);
+				return identifier;
+			}
+			
+			identifier.setValue(provider.getName());
 		}
 		return identifier;
-	}
-	
-	private static List<String> getProviderUniversalIdentifiers(Encounter encounter) {
-		List<String> practitioners = new ArrayList<>();
-		List<EncounterProvider> encounterProviders = new ArrayList<>(encounter.getActiveEncounterProviders());
-		encounterProviders.forEach(provider -> practitioners.add(providerUniversalIdentifier(provider.getProvider())));
-		return practitioners;
 	}
 	
 	private static String providerUniversalIdentifier(Provider provider) {
@@ -80,5 +81,24 @@ public class ReferencesUtil {
 			return attributes.isEmpty() ? "" : attributes.get(0).getValue().toString();
 		}
 		return "";
+	}
+	
+	public static Identifier buildProviderIdentifierByUser(User user) {
+		Collection<Provider> provider = Context.getProviderService().getProvidersByPerson(user.getPerson());
+		Identifier identifier = new Identifier();
+		identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
+		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+		if (!provider.isEmpty()) {
+			Provider userProvider = provider.iterator().next();
+			String providerNationalId = providerUniversalIdentifier(userProvider);
+			if (!providerNationalId.isEmpty()) {
+				identifier.setValue(providerNationalId);
+				return identifier;
+			}
+			identifier.setValue(userProvider.getName());
+			return identifier;
+		}
+		identifier.setValue(user.getGivenName() + " " + user.getGivenName());
+		return identifier;
 	}
 }

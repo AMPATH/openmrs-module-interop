@@ -50,11 +50,13 @@ public class AppointmentObsTranslatorImpl implements AppointmentObsTranslator {
 		Person obsPerson = obs.getPerson();
 		Appointment.AppointmentParticipantComponent t = new Appointment.AppointmentParticipantComponent();
 		t.setActor(patientReferenceTranslator.toFhirResource((Patient) obsPerson));
+		t.setStatus(Appointment.ParticipationStatus.NEEDSACTION);
 		fhirAppointment.addParticipant(t);
 		
 		fhirAppointment.setStart(obs.getValueDatetime());
 		fhirAppointment.setCreated(obs.getObsDatetime());
-		if (obs.getConcept().getUuid().equalsIgnoreCase("160288AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+		fhirAppointment.setStatus(Appointment.AppointmentStatus.BOOKED);
+		if (obs.getConcept().getUuid().equalsIgnoreCase("160288AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
 			if (obs.getValueCoded() != null) {
 				fhirAppointment.setAppointmentType(conceptTranslator.toFhirResource(obs.getValueCoded()));
 			}

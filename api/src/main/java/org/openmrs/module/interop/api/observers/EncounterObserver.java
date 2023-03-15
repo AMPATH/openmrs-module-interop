@@ -85,18 +85,19 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		Encounter encounter = Context.getEncounterService().getEncounterByUuid(metadata.getString("uuid"));
 		Bundle preparedBundle = new Bundle();
 		
-		this.processBrokers(encounter, preparedBundle);
+		this.processFhirResources(encounter, preparedBundle);
 		
 		org.hl7.fhir.r4.model.Encounter fhirEncounter = encounterTranslator.toFhirResource(encounter);
 		fhirEncounter.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
 		org.hl7.fhir.r4.model.Encounter.EncounterLocationComponent locationComponent = new org.hl7.fhir.r4.model.Encounter.EncounterLocationComponent();
 		ReferencesUtil.buildLocationReference(encounter.getLocation(), locationComponent.getLocation());
 		fhirEncounter.setLocation(Collections.singletonList(locationComponent));
+		fhirEncounter.getParticipantFirstRep().getIndividual().setIdentifier(buildProviderIdentifier(encounter));
 		
 		List<Resource> encounterContainedResources = ReferencesUtil.resolveProvenceReference(fhirEncounter.getContained(),
 		    encounter);
 		fhirEncounter.getContained().clear();
-		fhirEncounter.setContained(encounterContainedResources);
+		//fhirEncounter.setContained(encounterContainedResources);
 		
 		Bundle.BundleEntryComponent encounterBundleEntryComponent = new Bundle.BundleEntryComponent();
 		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
@@ -115,7 +116,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			// provence references
 			List<Resource> resources = ReferencesUtil.resolveProvenceReference(fhirObs.getContained(), encounter);
 			fhirObs.getContained().clear();
-			fhirObs.setContained(resources);
+			//fhirObs.setContained(resources);
 			
 			Bundle.BundleEntryComponent obsBundleEntry = new Bundle.BundleEntryComponent();
 			Bundle.BundleEntryRequestComponent requestComponent = new Bundle.BundleEntryRequestComponent();
@@ -152,7 +153,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		return bundleEntryComponent;
 	}
 	
-	private void processBrokers(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
+	private void processFhirResources(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
 		List<Condition> conditions = conditionProcessor.process(encounter);
 		conditions.forEach(condition -> {
 			condition.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
@@ -160,7 +161,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			
 			List<Resource> resources = ReferencesUtil.resolveProvenceReference(condition.getContained(), encounter);
 			condition.getContained().clear();
-			condition.setContained(resources);
+			//condition.setContained(resources);
 			
 			bundle.addEntry(buildConditionBundleEntry(condition));
 		});
@@ -169,7 +170,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		appointments.forEach(appointment -> {
 			List<Resource> resources = ReferencesUtil.resolveProvenceReference(appointment.getContained(), encounter);
 			appointment.getContained().clear();
-			appointment.setContained(resources);
+			//appointment.setContained(resources);
 			
 			for (Appointment.AppointmentParticipantComponent participantComponent : appointment.getParticipant()) {
 				participantComponent.getActor().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));

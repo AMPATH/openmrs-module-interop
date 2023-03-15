@@ -21,6 +21,7 @@ import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
 import org.openmrs.module.interop.api.processors.translators.ConditionObsTranslator;
+import org.openmrs.module.interop.utils.ReferencesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +58,7 @@ public class ConditionObsTranslatorImpl implements ConditionObsTranslator {
 		
 		fhirCondition.setOnset(new DateTimeType().setValue(obs.getObsDatetime()));
 		fhirCondition.setRecorder(practitionerReferenceTranslator.toFhirResource(obs.getCreator()));
+		fhirCondition.getRecorder().setIdentifier(ReferencesUtil.buildProviderIdentifierByUser(obs.getCreator()));
 		fhirCondition.setRecordedDate(obs.getDateCreated());
 		
 		fhirCondition.getMeta().setLastUpdated(this.getLastUpdated(obs));
