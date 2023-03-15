@@ -18,6 +18,7 @@ import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
 import org.openmrs.Person;
+import org.openmrs.Provider;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.event.Event;
@@ -28,12 +29,14 @@ import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.impl.AllergyIntoleranceTranslatorImpl;
 import org.openmrs.module.interop.api.processors.translators.AllergyIntoleranceObsTranslator;
 import org.openmrs.module.interop.api.processors.translators.ConditionObsTranslator;
+import org.openmrs.module.interop.utils.ReferencesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -50,8 +53,6 @@ public class AllergyIntoleranceObsTranslatorImpl implements AllergyIntoleranceOb
 	
 	@Autowired
 	private ConceptTranslator conceptTranslator;
-	
-	AllergyIntoleranceTranslatorImpl allergyIntoleranceTranslator;
 	
 	@Override
 	public AllergyIntolerance toFhirResource(@Nonnull Obs obs) {
@@ -103,6 +104,7 @@ public class AllergyIntoleranceObsTranslatorImpl implements AllergyIntoleranceOb
 		}
 		
 		fhirAllergyIntolerance.setRecorder(practitionerReferenceTranslator.toFhirResource(obs.getCreator()));
+		fhirAllergyIntolerance.getRecorder().setIdentifier(ReferencesUtil.buildProviderIdentifierByUser(obs.getCreator()));
 		fhirAllergyIntolerance.getMeta().setLastUpdated(this.getLastUpdated(obs));
 		
 		return fhirAllergyIntolerance;
