@@ -19,6 +19,7 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
 import org.openmrs.Person;
 import org.openmrs.User;
+import org.openmrs.api.context.Context;
 import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.translators.AllergyIntoleranceTranslator;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
@@ -87,13 +88,13 @@ public class AllergyIntoleranceObsTranslatorImpl implements AllergyIntoleranceOb
 		if (obs.getConcept().getUuid().equalsIgnoreCase("162760AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
 			if (obs.getValueCoded() != null) {
 				AllergyIntolerance.AllergyIntoleranceReactionComponent cc = new AllergyIntolerance.AllergyIntoleranceReactionComponent();
-				if (obs.getValueCoded().getConceptId().equals("160754AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+				if (obs.getValueCoded().equals(Context.getConceptService().getConceptByUuid("160754AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))) {
 					cc.setSeverity(AllergyIntolerance.AllergyIntoleranceSeverity.MILD);
 					fhirAllergyIntolerance.setReaction(Arrays.asList(cc));
-				} else if (obs.getValueCoded().getConceptId().equals("160755AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+				} else if (obs.getValueCoded().equals(Context.getConceptService().getConceptByUuid("160755AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))) {
 					cc.setSeverity(AllergyIntolerance.AllergyIntoleranceSeverity.MODERATE);
 					fhirAllergyIntolerance.setReaction(Arrays.asList(cc));
-				} else if (obs.getValueCoded().getConceptId().equals("160756AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+				} else if (obs.getValueCoded().equals(Context.getConceptService().getConceptByUuid("160756AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))) {
 					cc.setSeverity(AllergyIntolerance.AllergyIntoleranceSeverity.SEVERE);
 					fhirAllergyIntolerance.setReaction(Arrays.asList(cc));
 				}
