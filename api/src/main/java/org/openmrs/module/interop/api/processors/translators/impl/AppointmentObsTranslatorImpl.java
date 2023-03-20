@@ -10,16 +10,21 @@
 package org.openmrs.module.interop.api.processors.translators.impl;
 
 import org.hl7.fhir.r4.model.Appointment;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.ServiceRequest;
 import org.openmrs.Auditable;
+import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
-import org.openmrs.Patient;
-import org.openmrs.Person;
 import org.openmrs.User;
+import org.openmrs.module.fhir2.FhirConstants;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
-import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
 import org.openmrs.module.interop.api.processors.translators.AppointmentObsTranslator;
+import org.openmrs.module.interop.api.processors.translators.AppointmentRequestTranslator;
+import org.openmrs.module.interop.utils.ReferencesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,13 +37,10 @@ import static org.apache.commons.lang3.Validate.notNull;
 public class AppointmentObsTranslatorImpl implements AppointmentObsTranslator {
 	
 	@Autowired
-	private PatientReferenceTranslator patientReferenceTranslator;
-	
-	@Autowired
 	private PractitionerReferenceTranslator<User> practitionerReferenceTranslator;
 	
 	@Autowired
-	private ConceptTranslator conceptTranslator;
+	private AppointmentRequestTranslator appointmentRequestTranslator;
 	
 	@Override
 	public Appointment toFhirResource(@Nonnull Obs obs) {
@@ -47,21 +49,20 @@ public class AppointmentObsTranslatorImpl implements AppointmentObsTranslator {
 		Appointment fhirAppointment = new Appointment();
 		fhirAppointment.setId(obs.getUuid());
 		
-		Person obsPerson = obs.getPerson();
-		Appointment.AppointmentParticipantComponent t = new Appointment.AppointmentParticipantComponent();
-		t.setActor(patientReferenceTranslator.toFhirResource((Patient) obsPerson));
-		t.setStatus(Appointment.ParticipationStatus.NEEDSACTION);
-		fhirAppointment.addParticipant(t);
+		Appointment.AppointmentParticipantComponent participant = new Appointment.AppointmentParticipantComponent();
+		participant.addType(new CodeableConcept()
+		        .addCoding(new Coding("http://terminology.hl7.org/CodeSystem/v3-ParticipationType", "ATND", "Attender")));
+		participant.setActor(practitionerReferenceTranslator.toFhirResource(obs.getCreator()));
+		participant.getActor().setIdentifier(ReferencesUtil.buildProviderIdentifierByUser(obs.getCreator()));
+		participant.setRequired(Appointment.ParticipantRequired.OPTIONAL);
+		participant.setStatus(Appointment.ParticipationStatus.ACCEPTED);
+		fhirAppointment.addParticipant(participant);
 		
 		fhirAppointment.setStart(obs.getValueDatetime());
-		fhirAppointment.setCreated(obs.getObsDatetime());
 		fhirAppointment.setStatus(Appointment.AppointmentStatus.BOOKED);
-		if (obs.getConcept().getUuid().equalsIgnoreCase("160288AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
-			if (obs.getValueCoded() != null) {
-				fhirAppointment.setAppointmentType(conceptTranslator.toFhirResource(obs.getValueCoded()));
-			}
-		}
 		
+		fhirAppointment.addBasedOn(getServiceRequest(obs.getEncounter()));
+		fhirAppointment.setCreated(obs.getObsDatetime());
 		fhirAppointment.getMeta().setLastUpdated(this.getLastUpdated(obs));
 		
 		return fhirAppointment;
@@ -74,5 +75,12 @@ public class AppointmentObsTranslatorImpl implements AppointmentObsTranslator {
 		} else {
 			return null;
 		}
+	}
+	
+	private Reference getServiceRequest(Encounter encounter) {
+		ServiceRequest request = appointmentRequestTranslator.toFhirResource(encounter);
+		Reference reference = new Reference().setReference(FhirConstants.SERVICE_REQUEST + "/" + request.getId())
+		        .setType(FhirConstants.PRACTITIONER);
+		return reference;
 	}
 }
