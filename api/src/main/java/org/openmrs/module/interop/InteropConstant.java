@@ -29,7 +29,9 @@ public class InteropConstant {
 	
 	public static String APPOINTMENT_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.appointments";
 	
-	public static String APPOINTMENT_CONCEPT_UUID = "interop.appointments";
+	public static String APPOINTMENT_WITH_CODED_TYPES = "interop.appointmentWithCodedTypes";
+	
+	public static String APPOINTMENT_WITH_NON_CODED_TYPES = "interop.appointmentWithNonCodedTypes";
 	
 	public static String ALLERGY_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.allergyIntolerance";
 	

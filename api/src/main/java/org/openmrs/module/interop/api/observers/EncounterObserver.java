@@ -16,6 +16,7 @@ import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.ServiceRequest;
 import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
@@ -25,14 +26,15 @@ import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
-import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.openmrs.module.interop.api.processors.AppointmentProcessor;
 import org.openmrs.module.interop.api.processors.ConditionProcessor;
+import org.openmrs.module.interop.api.processors.translators.AppointmentRequestTranslator;
 import org.openmrs.module.interop.utils.ObserverUtils;
 import org.openmrs.module.interop.utils.ReferencesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -59,7 +61,12 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	private ConditionProcessor conditionProcessor;
 	
 	@Autowired
+	@Qualifier("interop.appointmentProcessor")
 	private AppointmentProcessor appointmentProcessor;
+	
+	@Autowired
+	@Qualifier("interop.appointmentRequestTranslator")
+	private AppointmentRequestTranslator appointmentRequestTranslator;
 	
 	@Override
 	public Class<?> clazz() {
@@ -84,8 +91,6 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		//Create bundle
 		Encounter encounter = Context.getEncounterService().getEncounterByUuid(metadata.getString("uuid"));
 		Bundle preparedBundle = new Bundle();
-		
-		this.processFhirResources(encounter, preparedBundle);
 		
 		org.hl7.fhir.r4.model.Encounter fhirEncounter = encounterTranslator.toFhirResource(encounter);
 		fhirEncounter.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
@@ -130,6 +135,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		//		log.error("Bundled resources :: {}",
 		//		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
 		
+		this.processFhirResources(encounter, preparedBundle);
+		
 		this.publish(preparedBundle);
 	}
 	
@@ -143,7 +150,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		return bundleEntryComponent;
 	}
 	
-	private Bundle.BundleEntryComponent getAppointmentBundleComponent(Appointment appointment) {
+	private Bundle.BundleEntryComponent createAppointmentBundleComponent(Appointment appointment) {
 		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
 		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
 		bundleEntryRequestComponent.setUrl("Appointment");
@@ -153,7 +160,19 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		return bundleEntryComponent;
 	}
 	
+	private Bundle.BundleEntryComponent createAppointmentRequestBundleComponent(ServiceRequest serviceRequest) {
+		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
+		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
+		bundleEntryRequestComponent.setUrl("ServiceRequest");
+		Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+		bundleEntryComponent.setRequest(bundleEntryRequestComponent);
+		bundleEntryComponent.setResource(serviceRequest);
+		return bundleEntryComponent;
+	}
+	
 	private void processFhirResources(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
+		bundle.addEntry(createAppointmentRequestBundleComponent(appointmentRequestTranslator.toFhirResource(encounter)));
+		
 		List<Condition> conditions = conditionProcessor.process(encounter);
 		conditions.forEach(condition -> {
 			condition.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
@@ -175,7 +194,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			for (Appointment.AppointmentParticipantComponent participantComponent : appointment.getParticipant()) {
 				participantComponent.getActor().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
 			}
-			bundle.addEntry(getAppointmentBundleComponent(appointment));
+			bundle.addEntry(createAppointmentBundleComponent(appointment));
 		});
 		
 	}
