@@ -13,23 +13,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Appointment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
+import org.hl7.fhir.r4.model.DiagnosticReport;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ServiceRequest;
 import org.openmrs.Encounter;
 import org.openmrs.Obs;
-import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
+import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
 import org.openmrs.module.interop.api.processors.AppointmentProcessor;
 import org.openmrs.module.interop.api.processors.ConditionProcessor;
+import org.openmrs.module.interop.api.processors.DiagnosticReportProcessor;
 import org.openmrs.module.interop.api.processors.translators.AppointmentRequestTranslator;
 import org.openmrs.module.interop.utils.ObserverUtils;
 import org.openmrs.module.interop.utils.ReferencesUtil;
@@ -43,7 +44,6 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.openmrs.module.interop.utils.ReferencesUtil.buildProviderIdentifier;
 
@@ -67,6 +67,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	@Autowired
 	@Qualifier("interop.appointmentRequestTranslator")
 	private AppointmentRequestTranslator appointmentRequestTranslator;
+	
+	@Autowired
+	private DiagnosticReportProcessor diagnosticReportProcessor;
 	
 	@Override
 	public Class<?> clazz() {
@@ -93,7 +96,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		Bundle preparedBundle = new Bundle();
 		
 		org.hl7.fhir.r4.model.Encounter fhirEncounter = encounterTranslator.toFhirResource(encounter);
-		fhirEncounter.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+		fhirEncounter.getSubject().setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
 		org.hl7.fhir.r4.model.Encounter.EncounterLocationComponent locationComponent = new org.hl7.fhir.r4.model.Encounter.EncounterLocationComponent();
 		ReferencesUtil.buildLocationReference(encounter.getLocation(), locationComponent.getLocation());
 		fhirEncounter.setLocation(Collections.singletonList(locationComponent));
@@ -116,7 +119,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		List<Obs> encounterObservations = new ArrayList<>(encounter.getObs());
 		for (Obs obs : encounterObservations) {
 			Observation fhirObs = observationTranslator.toFhirResource(obs);
-			fhirObs.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+			fhirObs.addIdentifier(new Identifier().setSystem(InteropConstant.SYSTEM_URL).setValue(obs.getUuid())
+			        .setUse(Identifier.IdentifierUse.OFFICIAL));
+			fhirObs.getSubject().setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
 			
 			// provence references
 			List<Resource> resources = ReferencesUtil.resolveProvenceReference(fhirObs.getContained(), encounter);
@@ -170,12 +175,22 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		return bundleEntryComponent;
 	}
 	
+	private Bundle.BundleEntryComponent createDiagnosticReportComponent(DiagnosticReport diagnosticReport) {
+		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
+		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
+		bundleEntryRequestComponent.setUrl("DiagnosticReport");
+		Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+		bundleEntryComponent.setRequest(bundleEntryRequestComponent);
+		bundleEntryComponent.setResource(diagnosticReport);
+		return bundleEntryComponent;
+	}
+	
 	private void processFhirResources(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
 		bundle.addEntry(createAppointmentRequestBundleComponent(appointmentRequestTranslator.toFhirResource(encounter)));
 		
 		List<Condition> conditions = conditionProcessor.process(encounter);
 		conditions.forEach(condition -> {
-			condition.getSubject().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+			condition.getSubject().setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
 			condition.getRecorder().setIdentifier(buildProviderIdentifier(encounter));
 			
 			List<Resource> resources = ReferencesUtil.resolveProvenceReference(condition.getContained(), encounter);
@@ -192,29 +207,16 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			//appointment.setContained(resources);
 			
 			for (Appointment.AppointmentParticipantComponent participantComponent : appointment.getParticipant()) {
-				participantComponent.getActor().setIdentifier(buildPatientUpiIdentifier(encounter.getPatient()));
+				participantComponent.getActor()
+				        .setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
 			}
 			bundle.addEntry(createAppointmentBundleComponent(appointment));
 		});
 		
-	}
-	
-	private Identifier buildPatientUpiIdentifier(@NotNull Patient patient) {
-		Identifier identifier = new Identifier();
-		identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
-		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-		identifier.setValue(getPatientNUPI(patient));
-		
-		return identifier;
-	}
-	
-	private String getPatientNUPI(Patient patient) {
-		if (ObserverUtils.getNUPIIdentifierType() != null) {
-			List<PatientIdentifier> nUpi = patient.getActiveIdentifiers().stream()
-			        .filter(id -> id.getIdentifierType().getUuid().equals(ObserverUtils.getNUPIIdentifierType().getUuid()))
-			        .collect(Collectors.toList());
-			return nUpi.isEmpty() ? "" : nUpi.get(0).getIdentifier();
+		List<DiagnosticReport> diagnosticReports = diagnosticReportProcessor.process(encounter);
+		if (!diagnosticReports.isEmpty()) {
+			bundle.addEntry(createDiagnosticReportComponent(diagnosticReports.get(0)));
 		}
-		return "";
+		
 	}
 }

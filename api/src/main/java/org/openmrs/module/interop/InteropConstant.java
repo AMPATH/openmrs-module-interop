@@ -37,4 +37,8 @@ public class InteropConstant {
 	
 	public static String ALLERGY_CONCEPT_UUID = "interop.allergyIntolerance";
 	
+	public static String LAB_RESULT_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.labResults";
+	
+	public static String LAB_RESULT_CONCEPT_UUID = "interop.labResults";
+	
 }
