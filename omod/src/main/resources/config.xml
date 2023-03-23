@@ -152,5 +152,10 @@
 		<description>System Configuration URL</description>
 		<defaultValue>https://interoperabilitylab.uonbi.ac.ke/test/fhir-server/api/v4/</defaultValue>
 	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.treatmentPlan</property>
+		<description>coma separated list of treatment plan(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
 	
 </module>

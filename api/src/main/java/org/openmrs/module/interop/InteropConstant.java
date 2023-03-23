@@ -37,4 +37,6 @@ public class InteropConstant {
 	
 	public static String ALLERGY_CONCEPT_UUID = "interop.allergyIntolerance";
 	
+	public static String DIAGNOSIS_TREATMENT_PLAN_CONCEPT_UUID = "interop.treatmentPlan";
+	
 }
