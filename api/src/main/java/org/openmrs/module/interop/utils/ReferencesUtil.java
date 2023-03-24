@@ -18,6 +18,8 @@ import org.openmrs.Encounter;
 import org.openmrs.EncounterProvider;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.Provider;
 import org.openmrs.ProviderAttribute;
 import org.openmrs.User;
@@ -100,5 +102,24 @@ public class ReferencesUtil {
 		}
 		identifier.setValue(user.getGivenName() + " " + user.getGivenName());
 		return identifier;
+	}
+	
+	public static Identifier buildPatientUpiIdentifier(@NotNull Patient patient) {
+		Identifier identifier = new Identifier();
+		identifier.setSystem(ObserverUtils.getSystemUrlConfiguration());
+		identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+		identifier.setValue(getPatientNUPI(patient));
+		
+		return identifier;
+	}
+	
+	private static String getPatientNUPI(Patient patient) {
+		if (ObserverUtils.getNUPIIdentifierType() != null) {
+			List<PatientIdentifier> nUpi = patient.getActiveIdentifiers().stream()
+			        .filter(id -> id.getIdentifierType().getUuid().equals(ObserverUtils.getNUPIIdentifierType().getUuid()))
+			        .collect(Collectors.toList());
+			return nUpi.isEmpty() ? "" : nUpi.get(0).getIdentifier();
+		}
+		return "";
 	}
 }
