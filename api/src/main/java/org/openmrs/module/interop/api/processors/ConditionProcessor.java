@@ -14,10 +14,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Condition;
+import org.hl7.fhir.r4.model.Extension;
 import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.InteropProcessor;
 import org.openmrs.module.interop.api.processors.translators.ConditionObsTranslator;
@@ -28,6 +31,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component("interop.conditionBroker")
 public class ConditionProcessor implements InteropProcessor<Encounter> {
+	
+	@Autowired
+	private ConceptTranslator conceptTranslator;
 	
 	@Autowired
 	@Qualifier("interop.conditions")
@@ -58,20 +64,51 @@ public class ConditionProcessor implements InteropProcessor<Encounter> {
 		List<Obs> allObs = new ArrayList<>(encounter.getAllObs());
 		
 		List<Obs> conditionsObs = new ArrayList<>();
+		List<Obs> treatmentPlanObs = new ArrayList<>();
 		if (validateEncounterType(encounter)) {
 			allObs.forEach(obs -> {
 				if (validateConceptQuestions(obs)) {
 					conditionsObs.add(obs);
+				}
+				if (validateDiagnosisTreatmentPlan(obs)) {
+					treatmentPlanObs.add(obs);
 				}
 			});
 		}
 		
 		List<Condition> conditions = new ArrayList<>();
 		if (!conditionsObs.isEmpty()) {
-			conditionsObs.forEach(obs -> conditions.add(conditionObsTranslator.toFhirResource(obs)));
+			conditionsObs.forEach(obs -> {
+				Condition condition = conditionObsTranslator.toFhirResource(obs);
+				if (obs.getObsGroup() != null) {
+					treatmentPlanObs.forEach(value -> {
+						if (value.getObsGroup().equals(obs.getObsGroup())) {
+							CodeableConcept treatmentPlan = conceptTranslator.toFhirResource(value.getConcept());
+							treatmentPlan.getCodingFirstRep().setDisplay(value.getValueText());
+							treatmentPlan.setText(value.getValueText());
+							
+							Extension extension = new Extension();
+							extension.setValue(treatmentPlan);
+							extension.setUrl(InteropConstant.SYSTEM_URL);
+							
+							condition.addExtension(extension);
+						}
+					});
+				}
+				conditions.add(condition);
+			});
 		}
 		
 		return conditions;
+	}
+	
+	public boolean validateDiagnosisTreatmentPlan(Obs conceptObs) {
+		String conceptString = Context.getAdministrationService()
+		        .getGlobalPropertyValue(InteropConstant.DIAGNOSIS_TREATMENT_PLAN_CONCEPT_UUID, "");
+		
+		List<String> conceptUuids = Arrays.asList(conceptString.split(","));
+		
+		return conceptUuids.contains(conceptObs.getConcept().getUuid());
 	}
 	
 	private boolean validateEncounterType(Encounter encounter) {
