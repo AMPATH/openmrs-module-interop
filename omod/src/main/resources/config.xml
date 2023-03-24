@@ -148,6 +148,17 @@
 		<defaultValue></defaultValue>
 	</globalProperty>
 	<globalProperty>
+		<property>@MODULE_ID@.labResults</property>
+		<description>Coma separated list of lab results(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+
+	<globalProperty>
+		<property>@MODULE_ID@.encounterTypes.labResults</property>
+		<description>Lab results encounter types enabled</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
 		<property>@MODULE_ID@.system.url.configuration</property>
 		<description>System Configuration URL</description>
 		<defaultValue>https://interoperabilitylab.uonbi.ac.ke/test/fhir-server/api/v4/</defaultValue>
