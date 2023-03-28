@@ -35,10 +35,22 @@ public class InteropConstant {
 	
 	public static String ALLERGY_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.allergyIntolerance";
 	
-	public static String ALLERGY_CONCEPT_UUID = "interop.allergyIntolerance";
+	public static String ALLERGY_CAUSATIVE_AGENT_CONCEPT_UUID = "interop.allergyCausativeAgent";
+	
+	public static String ALLERGY_REACTION_CONCEPT_UUID = "interop.allergyReaction";
+	
+	public static String ALLERGY_SEVERITY_CONCEPT_UUID = "interop.allergySeverity";
+	
+	public static String ALLERGY_ONSET_DATE_CONCEPT_UUID = "interop.allergyOnsetDate";
+	
+	public static String ALLERGY_ACTION_TAKEN_CONCEPT_UUID = "interop.allergyActionTaken";
+	
+	public static String ALLERGY_SEVERITY_MODERATE_CONCEPT_UUID = "interop.allergyReactionModerate";
+	
+	public static String ALLERGY_SEVERITY_SEVERE_CONCEPT_UUID = "interop.allergyReactionSevere";
 	
 	public static String DIAGNOSIS_TREATMENT_PLAN_CONCEPT_UUID = "interop.treatmentPlan";
-  
+	
 	public static String LAB_RESULT_PROCESSOR_ENCOUNTER_TYPE_UUIDS = "interop.encounterTypes.labResults";
 	
 	public static String LAB_RESULT_CONCEPT_UUID = "interop.labResults";

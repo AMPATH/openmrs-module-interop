@@ -10,6 +10,7 @@
 package org.openmrs.module.interop.api.observers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.r4.model.AllergyIntolerance;
 import org.hl7.fhir.r4.model.Appointment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
@@ -28,6 +29,7 @@ import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
 import org.openmrs.module.interop.InteropConstant;
 import org.openmrs.module.interop.api.Subscribable;
 import org.openmrs.module.interop.api.metadata.EventMetadata;
+import org.openmrs.module.interop.api.processors.AllergyIntoleranceProcessor;
 import org.openmrs.module.interop.api.processors.AppointmentProcessor;
 import org.openmrs.module.interop.api.processors.ConditionProcessor;
 import org.openmrs.module.interop.api.processors.DiagnosticReportProcessor;
@@ -70,6 +72,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	
 	@Autowired
 	private DiagnosticReportProcessor diagnosticReportProcessor;
+	
+	@Autowired
+	private AllergyIntoleranceProcessor allergyIntoleranceProcessor;
 	
 	@Override
 	public Class<?> clazz() {
@@ -185,6 +190,16 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		return bundleEntryComponent;
 	}
 	
+	private Bundle.BundleEntryComponent createAllergyComponent(AllergyIntolerance allergyIntolerance) {
+		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
+		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
+		bundleEntryRequestComponent.setUrl("AllergyIntolerance");
+		Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+		bundleEntryComponent.setRequest(bundleEntryRequestComponent);
+		bundleEntryComponent.setResource(allergyIntolerance);
+		return bundleEntryComponent;
+	}
+	
 	private void processFhirResources(@Nonnull Encounter encounter, @NotNull Bundle bundle) {
 		bundle.addEntry(createAppointmentRequestBundleComponent(appointmentRequestTranslator.toFhirResource(encounter)));
 		
@@ -217,6 +232,12 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		if (!diagnosticReports.isEmpty()) {
 			bundle.addEntry(createDiagnosticReportComponent(diagnosticReports.get(0)));
 		}
+		
+		List<AllergyIntolerance> allergyIntolerancesList = allergyIntoleranceProcessor.process(encounter);
+		allergyIntolerancesList.forEach(allergy -> {
+			allergy.getPatient().setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
+			bundle.addEntry(createAllergyComponent(allergy));
+		});
 		
 	}
 }

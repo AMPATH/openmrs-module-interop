@@ -137,8 +137,38 @@
 	</globalProperty>
 
 	<globalProperty>
-		<property>@MODULE_ID@.allergyIntolerance</property>
-		<description>coma separated list of allergy(concept questions)</description>
+		<property>@MODULE_ID@.allergyCausativeAgent</property>
+		<description>coma separated list of allergens(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.allergyReaction</property>
+		<description>coma separated list of allergy reactions(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.allergyReactionModerate</property>
+		<description>MODERATE allergy severity concept</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.allergyReactionSevere</property>
+		<description>SEVERE allergy severity concept</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.allergySeverity</property>
+		<description>coma separated list of allergy severity(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.allergyOnsetDate</property>
+		<description>coma separated list of allergy onset date(concept questions)</description>
+		<defaultValue></defaultValue>
+	</globalProperty>
+	<globalProperty>
+		<property>@MODULE_ID@.allergyActionTaken</property>
+		<description>coma separated list of allergy action (concept questions)</description>
 		<defaultValue></defaultValue>
 	</globalProperty>
 
