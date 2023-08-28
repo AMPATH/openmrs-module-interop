@@ -107,6 +107,9 @@ public abstract class BaseObserver {
 	}
 	
 	public void publish(@NotNull IAnyResource resource) {
+		log.error("Bundled resources :: {}",
+		    fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(resource));
+		
 		this.getPublishers().forEach(publisher -> {
 			Publisher newInstancePublisher;
 			try {

@@ -24,6 +24,7 @@ import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.event.Event;
+import org.openmrs.module.fhir2.api.translators.EncounterReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.ObservationTranslator;
 import org.openmrs.module.interop.InteropConstant;
@@ -55,6 +56,9 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 	
 	@Autowired
 	private EncounterTranslator<Encounter> encounterTranslator;
+	
+	@Autowired
+	private EncounterReferenceTranslator<Encounter> encounterReferenceTranslator;
 	
 	@Autowired
 	private ObservationTranslator observationTranslator;
@@ -114,8 +118,8 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		
 		Bundle.BundleEntryComponent encounterBundleEntryComponent = new Bundle.BundleEntryComponent();
 		Bundle.BundleEntryRequestComponent bundleEntryRequestComponent = new Bundle.BundleEntryRequestComponent();
-		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.POST);
-		bundleEntryRequestComponent.setUrl("Encounter");
+		bundleEntryRequestComponent.setMethod(Bundle.HTTPVerb.PUT);
+		bundleEntryRequestComponent.setUrl("Encounter/" + fhirEncounter.getId());
 		encounterBundleEntryComponent.setRequest(bundleEntryRequestComponent);
 		encounterBundleEntryComponent.setResource(fhirEncounter);
 		preparedBundle.addEntry(encounterBundleEntryComponent);
@@ -135,18 +139,14 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 			
 			Bundle.BundleEntryComponent obsBundleEntry = new Bundle.BundleEntryComponent();
 			Bundle.BundleEntryRequestComponent requestComponent = new Bundle.BundleEntryRequestComponent();
-			requestComponent.setMethod(Bundle.HTTPVerb.POST);
-			requestComponent.setUrl("Observation");
+			requestComponent.setMethod(Bundle.HTTPVerb.PUT);
+			requestComponent.setUrl("Observation/" + fhirObs.getId());
 			obsBundleEntry.setRequest(requestComponent);
 			obsBundleEntry.setResource(fhirObs);
-			preparedBundle.addEntry(obsBundleEntry);
+			//preparedBundle.addEntry(obsBundleEntry);
 		}
 		
-		//		log.error("Bundled resources :: {}",
-		//		    getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(preparedBundle));
-		
 		this.processFhirResources(encounter, preparedBundle);
-		
 		this.publish(preparedBundle);
 	}
 	
@@ -207,6 +207,7 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		conditions.forEach(condition -> {
 			condition.getSubject().setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
 			condition.getRecorder().setIdentifier(buildProviderIdentifier(encounter));
+			condition.setEncounter(encounterReferenceTranslator.toFhirResource(encounter));
 			
 			List<Resource> resources = ReferencesUtil.resolveProvenceReference(condition.getContained(), encounter);
 			condition.getContained().clear();
@@ -230,12 +231,14 @@ public class EncounterObserver extends BaseObserver implements Subscribable<org.
 		
 		List<DiagnosticReport> diagnosticReports = diagnosticReportProcessor.process(encounter);
 		if (!diagnosticReports.isEmpty()) {
+			diagnosticReports.get(0).setEncounter(encounterReferenceTranslator.toFhirResource(encounter));
 			bundle.addEntry(createDiagnosticReportComponent(diagnosticReports.get(0)));
 		}
 		
 		List<AllergyIntolerance> allergyIntolerancesList = allergyIntoleranceProcessor.process(encounter);
 		allergyIntolerancesList.forEach(allergy -> {
 			allergy.getPatient().setIdentifier(ReferencesUtil.buildPatientUpiIdentifier(encounter.getPatient()));
+			allergy.setEncounter(encounterReferenceTranslator.toFhirResource(encounter));
 			bundle.addEntry(createAllergyComponent(allergy));
 		});
 		

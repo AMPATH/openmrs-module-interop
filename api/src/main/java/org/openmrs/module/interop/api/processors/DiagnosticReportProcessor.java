@@ -81,6 +81,8 @@ public class DiagnosticReportProcessor implements InteropProcessor<Encounter> {
 				        .setUse(Identifier.IdentifierUse.OFFICIAL));
 				diagnosticReport.addResult(observation);
 			}
+		} else {
+			return new ArrayList<>();
 		}
 		
 		return Collections.singletonList(diagnosticReport);
