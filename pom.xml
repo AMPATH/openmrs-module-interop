@@ -220,5 +220,6 @@
         <hapifhirVersion>4.2.0</hapifhirVersion>
         <openmrsPlatformVersion>2.3.4</openmrsPlatformVersion>
         <openmrsPlatformToolsVersion>2.4.0</openmrsPlatformToolsVersion>
+        <opencsv.version>5.7.0</opencsv.version>
     </properties>
 </project>
